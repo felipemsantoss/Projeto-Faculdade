@@ -5,7 +5,7 @@ está lacrada por um desafio de memória. O usuário escolhe um objeto, encontra
 os oito pares e só então o botão de compra existe.
 
 ```
-CATÁLOGO → seleção → transição → MINIGAME → pares → PEÇA DESBLOQUEADA → carrinho → checkout
+CATÁLOGO → clique no produto → MINIGAME → pares → PEÇA DESBLOQUEADA → carrinho → checkout
 ```
 
 Front em React + TypeScript, back em Express + TypeScript. Todo o estado de
@@ -47,6 +47,7 @@ apenas esse identificador.
 | GET    | `/api/health`           | diagnóstico rápido                   |
 | GET    | `/api/products`         | catálogo                             |
 | GET    | `/api/session`          | peças desbloqueadas + carrinho       |
+| POST   | `/api/session/relock`   | relacra todas as peças (chamado ao carregar) |
 | POST   | `/api/session/unlock`   | registra o minigame vencido          |
 | POST   | `/api/cart`             | adiciona ao carrinho                 |
 | PATCH  | `/api/cart/:productId`  | altera a quantidade                  |
@@ -91,24 +92,21 @@ src/
 ├── services/
 │   └── api.ts                  ← cliente axios e todas as rotas
 │
-├── features/                   ── AS CINCO ETAPAS, NA ORDEM ──
-│   ├── catalog/                01 · explorar e escolher
+├── features/                   ── AS QUATRO ETAPAS, NA ORDEM ──
+│   ├── catalog/                01 · explorar e escolher (vai direto ao jogo)
 │   │   ├── Hero.tsx
 │   │   ├── Carousel.tsx        carrossel 3D: arraste, inércia, encaixe
 │   │   └── index.ts
-│   ├── product/                02 · a peça escolhida, ainda lacrada
-│   │   ├── ProductStage.tsx    ← botão "Adicionar ao carrinho" nº 1
-│   │   └── index.ts
-│   ├── minigame/               03 · o desafio que destrava a compra
+│   ├── minigame/               02 · o desafio que destrava a compra
 │   │   ├── MemoryGame.tsx      orquestra tabuleiro, HUD e vitória
 │   │   ├── MemoryCardTile.tsx  a carta que gira em 3D
 │   │   ├── GameHud.tsx         pares / jogadas / tempo
 │   │   ├── useMemoryGame.ts    ← TODAS as regras do jogo
 │   │   └── index.ts
-│   ├── unlock/                 04 · a recompensa
-│   │   ├── UnlockReveal.tsx    ← botão "Adicionar ao carrinho" nº 2
+│   ├── unlock/                 03 · a recompensa
+│   │   ├── UnlockReveal.tsx    ← o botão "Adicionar ao carrinho"
 │   │   └── index.ts
-│   └── cart/                   05 · sacola e pedido
+│   └── cart/                   04 · sacola e pedido
 │       ├── CartDrawer.tsx      gaveta, quantidades, subtotal, checkout
 │       ├── flyToCart.ts        o voo decorativo até o ícone
 │       └── index.ts
@@ -120,7 +118,7 @@ src/
 ├── shared/
 │   ├── ui/                     ActionButton, Toast
 │   ├── artwork/                ProductArtwork (SVG gerado por produto)
-│   └── chrome/                 TopBar, Cursor, Boot (tela de partida/erro)
+│   └── chrome/                 TopBar e Boot (tela de partida/erro)
 │
 ├── hooks/                      Genéricos: mídia, foco, rolagem
 ├── lib/                        debug, cor, formatação, embaralhamento
@@ -199,6 +197,33 @@ corre contra um teto de 1100 ms e o commit roda nos dois desfechos da promessa.
 A linha do tempo de animação do navegador congela em aba de fundo — se a compra
 dependesse dela, o clique sumiria em silêncio. (Foi um bug real, por isso a
 regra.)
+
+## Como se navega o catálogo
+
+| Onde | Gesto |
+| ---- | ----- |
+| Desktop | rolagem (roda/trackpad), setas na tela, teclado (←/→, Home/End) |
+| Toque | deslizar o dedo |
+| Abrir o produto | clicar no card central — vai direto ao minigame |
+
+**Recarregar a página relacra tudo.** O desbloqueio vale só enquanto a página
+está aberta: ao carregar, o front chama `POST /api/session/relock` e toda peça
+volta ao estado lacrado. O carrinho e os pedidos **não** são afetados — só o
+direito de comprar é que expira.
+
+Com mouse **não há arraste**: a rolagem conduz. Isso não é preferência estética,
+é a correção de um bug real — veja a regra 3 abaixo.
+
+**3. Capturar o ponteiro sequestra o clique.** O carrossel chamava
+`setPointerCapture` já no `pointerdown`. Pela especificação de Pointer Events,
+com a captura ativa o evento `click` é entregue ao elemento que capturou — o
+container — e o `onClick` do card **nunca dispara**. Clicar no produto não fazia
+nada. Hoje a captura só acontece quando o dedo passa do limiar de arraste, e o
+mouse nem entra nesse caminho.
+
+Detalhe do diagnóstico: testes que chamam `elemento.click()` não passam por
+captura nenhuma, então esse bug passa batido. Para o caminho de ponteiro é
+preciso disparar `pointerdown`/`pointerup` de verdade.
 
 ## Detalhes técnicos
 

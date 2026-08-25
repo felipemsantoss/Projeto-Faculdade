@@ -39,7 +39,7 @@ export function Boot({ status, message, onRetry }: BootProps) {
               </p>
             </div>
 
-            <ActionButton onClick={onRetry} data-cursor-label="Tentar">
+            <ActionButton onClick={onRetry}>
               Tentar de novo
             </ActionButton>
           </>

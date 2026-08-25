@@ -97,6 +97,23 @@ app.get('/api/session', (req, res) => {
 });
 
 /**
+ * Recomeço da vitrine: toda peça volta a ficar lacrada.
+ *
+ * O front chama isto ao carregar a página — recarregar significa jogar de
+ * novo. O carrinho e o histórico de pedidos continuam intactos: só o direito
+ * de comprar é que expira.
+ */
+app.post('/api/session/relock', (req, res) => {
+  const session = sessionFrom(req, res);
+  const antes = session.unlocked.length;
+  session.unlocked = [];
+  saveSession(session);
+
+  if (antes > 0) console.log(`  ↳ vitrine relacrada (${antes} peça(s) voltaram a ficar bloqueadas)`);
+  res.json(serialize(session));
+});
+
+/**
  * Registro do minigame vencido. É aqui que a peça deixa de estar lacrada —
  * e o servidor confere o resultado antes de aceitar.
  */

@@ -31,8 +31,6 @@
 }
 
 .hero__title {
-  display: flex;
-  flex-direction: column;
   font-size: var(--display-2);
   font-weight: 400;
   letter-spacing: -0.045em;

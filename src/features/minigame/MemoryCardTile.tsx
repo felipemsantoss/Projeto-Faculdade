@@ -44,8 +44,6 @@ export const MemoryCardTile = memo(function MemoryCardTile({
       aria-disabled={disabled || undefined}
       aria-pressed={isOpen}
       aria-label={labelFor(card, index + 1)}
-      data-cursor="link"
-      data-cursor-label={isMatched ? 'Feito' : 'Virar'}
     >
       <span className="mcard__inner">
         <span className="mcard__face mcard__face--back">

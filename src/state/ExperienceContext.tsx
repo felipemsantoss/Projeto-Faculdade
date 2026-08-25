@@ -38,7 +38,7 @@ const FALLBACK_ACCENT = '#a78bfa';
  * conduz. Quem sabe o que está desbloqueado é o servidor, via SessionContext.
  */
 export function ExperienceProvider({ children }: { children: ReactNode }) {
-  const { products, unlockProduct } = useSession();
+  const { products, unlockProduct, isUnlocked } = useSession();
 
   const [phase, setPhase] = useState<Phase>('catalog');
   const [product, setProduct] = useState<Product | null>(null);
@@ -57,14 +57,25 @@ export function ExperienceProvider({ children }: { children: ReactNode }) {
 
   const focus = useCallback((index: number) => setFocusedIndex(index), []);
 
-  const select = useCallback((next: Product) => {
-    log('fase', 'catálogo → produto', { id: next.id, nome: next.name });
-    setProduct(next);
-    setPhase('stage');
-  }, []);
+  /**
+   * Clicar no produto leva direto ao desafio. Se a peça já foi vencida antes,
+   * não faz sentido jogar de novo: vai para a tela de compra.
+   */
+  const select = useCallback(
+    (next: Product) => {
+      const liberada = isUnlocked(next.id);
+      log('fase', liberada ? 'catálogo → peça já liberada' : 'catálogo → minigame', {
+        id: next.id,
+        nome: next.name,
+      });
+      setProduct(next);
+      setPhase(liberada ? 'unlocked' : 'game');
+    },
+    [isUnlocked],
+  );
 
   const beginChallenge = useCallback(() => {
-    log('fase', 'produto → minigame');
+    log('fase', 'iniciando o minigame');
     setPhase('game');
   }, []);
 
@@ -75,9 +86,10 @@ export function ExperienceProvider({ children }: { children: ReactNode }) {
 
       void unlockProduct(product.id, moves, seconds).then((ok) => {
         if (!ok) {
-          // A API recusou o resultado: o usuário volta ao produto, ainda lacrado.
-          log('fase', 'API recusou o desbloqueio — voltando para a peça');
-          setPhase('stage');
+          // A API recusou o resultado: volta ao catálogo, peça ainda lacrada.
+          log('fase', 'API recusou o desbloqueio — voltando ao catálogo');
+          setPhase('catalog');
+          setProduct(null);
           return;
         }
         log('fase', 'desbloqueio confirmado pela API → revelação');

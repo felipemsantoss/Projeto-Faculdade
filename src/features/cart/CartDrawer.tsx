@@ -84,7 +84,7 @@ export function CartDrawer() {
                   {count === 0 ? 'Vazia' : `${pad2(count)} ${count === 1 ? 'peça' : 'peças'}`}
                 </h2>
               </div>
-              <button type="button" className="cart__close" onClick={close} aria-label="Fechar carrinho" data-cursor="link" data-cursor-label="Fechar">
+              <button type="button" className="cart__close" onClick={close} aria-label="Fechar carrinho">
                 <svg viewBox="0 0 18 18" aria-hidden="true">
                   <path d="M4.5 4.5 13.5 13.5M13.5 4.5 4.5 13.5" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
                 </svg>
@@ -110,7 +110,7 @@ export function CartDrawer() {
                   <p className="cart__done-note">
                     Enviamos os detalhes por e-mail. Suas peças desbloqueadas continuam liberadas no catálogo.
                   </p>
-                  <ActionButton variant="outline" onClick={close} data-cursor-label="Voltar">
+                  <ActionButton variant="outline" onClick={close}>
                     Continuar explorando
                   </ActionButton>
                 </motion.div>
@@ -121,7 +121,7 @@ export function CartDrawer() {
                   <p className="cart__empty-note">
                     Escolha uma peça no catálogo e vença o desafio de memória para liberá-la.
                   </p>
-                  <ActionButton variant="outline" onClick={close} data-cursor-label="Explorar">
+                  <ActionButton variant="outline" onClick={close}>
                     Ver o catálogo
                   </ActionButton>
                 </div>
@@ -155,7 +155,6 @@ export function CartDrawer() {
                               type="button"
                               onClick={() => void setQuantity(product.id, quantity - 1)}
                               aria-label={`Diminuir quantidade de ${product.name}`}
-                              data-cursor="link"
                             >
                               <svg viewBox="0 0 12 12" aria-hidden="true">
                                 <path d="M3 6h6" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
@@ -166,7 +165,6 @@ export function CartDrawer() {
                               type="button"
                               onClick={() => void setQuantity(product.id, quantity + 1)}
                               aria-label={`Aumentar quantidade de ${product.name}`}
-                              data-cursor="link"
                             >
                               <svg viewBox="0 0 12 12" aria-hidden="true">
                                 <path d="M6 3v6M3 6h6" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
@@ -178,8 +176,6 @@ export function CartDrawer() {
                             type="button"
                             className="cart__remove"
                             onClick={() => void removeFromCart(product.id)}
-                            data-cursor="link"
-                            data-cursor-label="Remover"
                           >
                             Remover
                           </button>
@@ -213,7 +209,6 @@ export function CartDrawer() {
                   onClick={() => void handleCheckout()}
                   disabled={checkout === 'processing' || busy}
                   className="cart__checkout"
-                  data-cursor-label="Finalizar"
                 >
                   {checkout === 'processing' ? 'Processando…' : 'Finalizar compra'}
                 </ActionButton>

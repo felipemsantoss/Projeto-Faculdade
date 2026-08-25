@@ -94,11 +94,11 @@ export function UnlockReveal({ product, onAddToCart }: UnlockRevealProps) {
           <span className="unlock__price-value">{formatPrice(product.price)}</span>
         </div>
 
-        <ActionButton icon={BagIcon} onClick={handleAdd} data-cursor-label="Adicionar">
+        <ActionButton icon={BagIcon} onClick={handleAdd}>
           {added ? 'Adicionar outro' : 'Adicionar ao carrinho'}
         </ActionButton>
 
-        <ActionButton variant="outline" icon={ArrowIcon} onClick={exit} data-cursor-label="Catálogo">
+        <ActionButton variant="outline" icon={ArrowIcon} onClick={exit}>
           Escolher outra peça
         </ActionButton>
       </motion.div>

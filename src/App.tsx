@@ -3,9 +3,8 @@ import { useCallback, useEffect, type ReactNode } from 'react';
 import { CartDrawer, flyToCart } from './features/cart';
 import { Carousel, Hero } from './features/catalog';
 import { MemoryGame } from './features/minigame';
-import { ProductStage } from './features/product';
 import { UnlockReveal } from './features/unlock';
-import { Boot, Cursor, TopBar } from './shared/chrome';
+import { Boot, TopBar } from './shared/chrome';
 import { ToastProvider } from './shared/ui';
 import { ExperienceProvider, useExperience } from './state/ExperienceContext';
 import { SessionProvider, useSession } from './state/SessionContext';
@@ -28,9 +27,7 @@ function Scene({ phase, children }: { phase: Phase; children: ReactNode }) {
   }, [phase]);
 
   return (
-    <div className={`phase${phase === 'game' || phase === 'unlocked' ? ' phase--center' : ''}`}>
-      {children}
-    </div>
+    <div className={`phase${phase === 'catalog' ? '' : ' phase--center'}`}>{children}</div>
   );
 }
 
@@ -117,9 +114,7 @@ function Experience() {
         {/* A `key` remonta a cena a cada troca de fase e reinicia a animação
             de entrada do CSS. Sem produto em foco, o catálogo é o destino. */}
         <Scene key={product ? `${phase}-${product.id}` : phase} phase={product ? phase : 'catalog'}>
-          {phase === 'stage' && product ? (
-            <ProductStage product={product} onAddToCart={handleAddToCart} />
-          ) : phase === 'game' && product ? (
+          {phase === 'game' && product ? (
             <MemoryGame key={product.id} product={product} onComplete={completeChallenge} />
           ) : phase === 'unlocked' && product ? (
             <UnlockReveal product={product} onAddToCart={handleAddToCart} />
@@ -133,7 +128,6 @@ function Experience() {
       </main>
 
       <CartDrawer />
-      <Cursor />
     </div>
   );
 }

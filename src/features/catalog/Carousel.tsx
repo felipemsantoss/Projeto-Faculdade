@@ -377,8 +377,6 @@ export function Carousel({ products, onSelect }: CarouselProps) {
         onPointerCancel={endDrag}
         onWheel={onWheel}
         onKeyDown={onKeyDown}
-        data-cursor={chosenId ? undefined : 'drag'}
-        data-cursor-label="Arraste"
       >
         <div className="carousel__track" ref={trackRef}>
           {products.map((product, index) => {
@@ -402,8 +400,6 @@ export function Carousel({ products, onSelect }: CarouselProps) {
                   className="pcard__hit"
                   onClick={() => handleCardClick(product, index)}
                   onFocus={() => index !== active && goTo(index)}
-                  data-cursor="card"
-                  data-cursor-label={isActive ? (unlocked ? 'Abrir' : 'Desbloquear') : 'Centralizar'}
                   aria-label={
                     isActive
                       ? `${product.name}, ${product.category}, ${formatPrice(product.price)}. ${
@@ -467,8 +463,6 @@ export function Carousel({ products, onSelect }: CarouselProps) {
           className="carousel__arrow"
           onClick={() => goTo(motionState.current.target - 1)}
           disabled={active === 0 || Boolean(chosenId)}
-          data-cursor="link"
-          data-cursor-label="Anterior"
           aria-label="Peça anterior"
         >
           <svg viewBox="0 0 18 18" aria-hidden="true">
@@ -491,8 +485,6 @@ export function Carousel({ products, onSelect }: CarouselProps) {
           className="carousel__arrow"
           onClick={() => goTo(motionState.current.target + 1)}
           disabled={active === last || Boolean(chosenId)}
-          data-cursor="link"
-          data-cursor-label="Próxima"
           aria-label="Próxima peça"
         >
           <svg viewBox="0 0 18 18" aria-hidden="true">
@@ -502,7 +494,7 @@ export function Carousel({ products, onSelect }: CarouselProps) {
       </div>
 
       <p className="carousel__hint">
-        <span aria-hidden="true">Arraste, role ou use as setas</span>
+        <span aria-hidden="true">Arraste ou role</span>
         <span className="u-sr-only">
           Use as setas do teclado para navegar entre as peças. Pressione Enter na peça central para abri-la.
         </span>

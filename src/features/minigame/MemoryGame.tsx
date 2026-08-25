@@ -185,11 +185,11 @@ export function MemoryGame({ product, onComplete }: MemoryGameProps) {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.3 }}
       >
-        <ActionButton variant="quiet" onClick={game.restart} disabled={isClearing} data-cursor-label="Refazer">
+        <ActionButton variant="quiet" onClick={game.restart} disabled={isClearing}>
           Reembaralhar
         </ActionButton>
         <span className="game__sep" aria-hidden="true" />
-        <ActionButton variant="quiet" onClick={exit} disabled={isClearing} data-cursor-label="Sair">
+        <ActionButton variant="quiet" onClick={exit} disabled={isClearing}>
           Voltar ao catálogo
         </ActionButton>
       </motion.footer>

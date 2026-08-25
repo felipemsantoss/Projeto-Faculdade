@@ -38,14 +38,6 @@ body {
   overflow-x: hidden;
 }
 
-/* O cursor customizado substitui o ponteiro apenas onde há mouse de verdade. */
-@media (hover: hover) and (pointer: fine) {
-  body[data-custom-cursor='on'],
-  body[data-custom-cursor='on'] * {
-    cursor: none;
-  }
-}
-
 img,
 svg {
   display: block;

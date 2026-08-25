@@ -63,8 +63,8 @@ export interface SessionState {
   orders: OrderSummary[];
 }
 
-/** Fases da experiência — uma máquina de estados linear e previsível. */
-export type Phase = 'catalog' | 'stage' | 'game' | 'unlocked';
+/** Fases da experiência — o clique no produto vai direto ao minigame. */
+export type Phase = 'catalog' | 'game' | 'unlocked';
 
 export type CardState = 'hidden' | 'revealed' | 'matched';
 

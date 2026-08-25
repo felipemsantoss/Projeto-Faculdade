@@ -80,9 +80,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
     setStatus('loading');
     setBootError(null);
-    log('api', 'carregando catálogo e sessão…');
+    log('api', 'carregando catálogo e relacrando a vitrine…');
 
-    Promise.all([AtelierApi.products(), AtelierApi.session()])
+    // Cada carregamento devolve todas as peças ao estado lacrado: recarregar
+    // a página significa vencer o desafio de novo. O carrinho sobrevive.
+    Promise.all([AtelierApi.products(), AtelierApi.relock()])
       .then(([catalogo, sessao]) => {
         if (cancelled) return;
         setProducts(catalogo);

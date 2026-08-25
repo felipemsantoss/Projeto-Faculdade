@@ -42,7 +42,6 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(fun
       ref={ref}
       type="button"
       className={cx('action', `action--${variant}`, className)}
-      data-cursor="link"
       onClick={handleClick}
       {...rest}
     >

@@ -92,6 +92,13 @@ export const AtelierApi = {
 
   session: () => api.get<SessionState>('/session').then((r) => r.data),
 
+  /**
+   * Relacra todas as peças e devolve a sessão. Chamado a cada carregamento:
+   * recarregar a página significa ter de vencer o desafio outra vez. O
+   * carrinho não é afetado.
+   */
+  relock: () => api.post<SessionState>('/session/relock').then((r) => r.data),
+
   /** Registra o minigame vencido. O servidor confere o resultado. */
   unlock: (productId: string, moves: number, seconds: number) =>
     api.post<SessionState>('/session/unlock', { productId, moves, seconds }).then((r) => r.data),
