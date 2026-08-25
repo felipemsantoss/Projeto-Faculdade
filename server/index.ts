@@ -2,12 +2,11 @@ import cors from 'cors';
 import express, { type NextFunction, type Request, type Response } from 'express';
 import { randomUUID } from 'node:crypto';
 import { PRODUCTS, getProductById } from '../src/data/products';
-import { getSession, saveSession, type CartRow, type Session } from './db';
+import { getSession, saveSession, type CartRow, type ChallengeRow, type Session } from './db';
+import { COPOS, TOTAL_RODADAS, planejarRodada } from './shell';
 
 const PORT = Number(process.env.API_PORT ?? 3333);
 const MAX_QUANTITY = 9;
-/** Um jogo perfeito resolve 8 pares em 8 jogadas — menos que isso é impossível. */
-const MIN_MOVES_TO_UNLOCK = 8;
 
 const app = express();
 app.use(cors());
@@ -97,53 +96,146 @@ app.get('/api/session', (req, res) => {
 });
 
 /**
- * Recomeço da vitrine: toda peça volta a ficar lacrada.
+ * Recomeço da vitrine: toda peça volta a ficar lacrada e os desafios em
+ * andamento são descartados — na próxima partida a bolinha é sorteada de novo.
  *
- * O front chama isto ao carregar a página — recarregar significa jogar de
- * novo. O carrinho e o histórico de pedidos continuam intactos: só o direito
- * de comprar é que expira.
+ * O front chama isto ao carregar a página. O carrinho e o histórico de
+ * pedidos continuam intactos: só o direito de comprar é que expira.
  */
 app.post('/api/session/relock', (req, res) => {
   const session = sessionFrom(req, res);
   const antes = session.unlocked.length;
   session.unlocked = [];
+  session.challenges = {};
   saveSession(session);
 
   if (antes > 0) console.log(`  ↳ vitrine relacrada (${antes} peça(s) voltaram a ficar bloqueadas)`);
   res.json(serialize(session));
 });
 
+// ---------------------------------------------- desafio dos três copos
+
+function novoDesafio(session: Session, productId: string, round = 1): ChallengeRow {
+  const plano = planejarRodada(round);
+  const challenge: ChallengeRow = {
+    status: 'playing',
+    round: plano.round,
+    startIndex: plano.startIndex,
+    trocas: plano.trocas,
+    swapMs: plano.swapMs,
+    finalIndex: plano.finalIndex,
+  };
+  session.challenges[productId] = challenge;
+  return challenge;
+}
+
 /**
- * Registro do minigame vencido. É aqui que a peça deixa de estar lacrada —
- * e o servidor confere o resultado antes de aceitar.
+ * Visão pública da rodada. O plano de trocas vai junto porque é ele que o
+ * cliente precisa para *animar* o embaralhamento — mas `finalIndex` fica de
+ * fora: quem confere a escolha é o servidor, com a própria simulação.
  */
-app.post('/api/session/unlock', (req, res) => {
+function serializeChallenge(productId: string, challenge: ChallengeRow) {
+  return {
+    productId,
+    cups: COPOS,
+    round: challenge.round,
+    totalRounds: TOTAL_RODADAS,
+    startIndex: challenge.startIndex,
+    trocas: challenge.trocas,
+    swapMs: challenge.swapMs,
+    status: challenge.status,
+  };
+}
+
+/** Abre o desafio da peça (ou devolve a rodada que já estava em andamento). */
+app.post('/api/challenge', (req, res) => {
   const session = sessionFrom(req, res);
   const product = requireProduct(req.body?.productId);
-  const moves = Number(req.body?.moves ?? 0);
-  const seconds = Number(req.body?.seconds ?? 0);
 
-  if (!Number.isFinite(moves) || moves < MIN_MOVES_TO_UNLOCK) {
-    throw new ApiError(
-      422,
-      'INVALID_RESULT',
-      `Resultado inválido: ${moves} jogadas é menos que o mínimo possível (${MIN_MOVES_TO_UNLOCK}).`,
-    );
-  }
+  const challenge = session.challenges[product.id] ?? novoDesafio(session, product.id);
+  saveSession(session);
+  res.json(serializeChallenge(product.id, challenge));
+});
 
-  if (!session.unlocked.includes(product.id)) {
-    session.unlocked.push(product.id);
-    saveSession(session);
-  }
+/** Recomeça da primeira rodada, com bolinha e trocas novas. */
+app.post('/api/challenge/reset', (req, res) => {
+  const session = sessionFrom(req, res);
+  const product = requireProduct(req.body?.productId);
 
-  console.log(`  ↳ peça "${product.id}" desbloqueada (${moves} jogadas, ${seconds}s)`);
-  res.status(201).json(serialize(session));
+  delete session.challenges[product.id];
+  const challenge = novoDesafio(session, product.id);
+  saveSession(session);
+
+  console.log(`  ↳ novo embaralhamento para "${product.id}"`);
+  res.status(201).json(serializeChallenge(product.id, challenge));
 });
 
 /**
- * Adicionar ao carrinho. A regra do produto é validada no servidor: peça
- * lacrada é recusada com 409, mesmo que a interface deixe o botão passar.
+ * A escolha do jogador. Acertar a última rodada é o que libera a compra — o
+ * desbloqueio nasce aqui, da posição que só o servidor calculou. O cliente
+ * manda apenas o copo escolhido; não tem como afirmar que venceu.
  */
+app.post('/api/challenge/pick', (req, res) => {
+  const session = sessionFrom(req, res);
+  const product = requireProduct(req.body?.productId);
+  const challenge = session.challenges[product.id];
+
+  if (!challenge) throw new ApiError(404, 'NO_CHALLENGE', 'Nenhum desafio aberto para esta peça.');
+  if (challenge.status !== 'playing') {
+    throw new ApiError(409, 'CHALLENGE_OVER', 'Esta rodada já terminou. Comece outra.');
+  }
+
+  const escolha = Number(req.body?.index);
+  if (!Number.isInteger(escolha) || escolha < 0 || escolha >= COPOS) {
+    throw new ApiError(400, 'INVALID_PICK', `Escolha um copo entre 0 e ${COPOS - 1}.`);
+  }
+
+  const acertou = escolha === challenge.finalIndex;
+  const ballIndex = challenge.finalIndex;
+  const rodadaVencida = challenge.round;
+
+  if (!acertou) {
+    challenge.status = 'lost';
+    saveSession(session);
+    console.log(`  ↳ "${product.id}" errou na rodada ${rodadaVencida} (bolinha em ${ballIndex})`);
+
+    res.status(201).json({
+      correct: false,
+      ballIndex,
+      challenge: serializeChallenge(product.id, challenge),
+      session: serialize(session),
+    });
+    return;
+  }
+
+  // Acertou: ou avança de rodada, ou fecha o desafio e libera a peça.
+  if (rodadaVencida >= TOTAL_RODADAS) {
+    challenge.status = 'won';
+    if (!session.unlocked.includes(product.id)) session.unlocked.push(product.id);
+    saveSession(session);
+    console.log(`  ↳ "${product.id}" desbloqueada após ${TOTAL_RODADAS} rodadas`);
+
+    res.status(201).json({
+      correct: true,
+      ballIndex,
+      challenge: serializeChallenge(product.id, challenge),
+      session: serialize(session),
+    });
+    return;
+  }
+
+  const proxima = novoDesafio(session, product.id, rodadaVencida + 1);
+  saveSession(session);
+  console.log(`  ↳ "${product.id}" acertou a rodada ${rodadaVencida}; vai para a ${proxima.round}`);
+
+  res.status(201).json({
+    correct: true,
+    ballIndex,
+    challenge: serializeChallenge(product.id, proxima),
+    session: serialize(session),
+  });
+});
+
 app.post('/api/cart', (req, res) => {
   const session = sessionFrom(req, res);
   const product = requireProduct(req.body?.productId);

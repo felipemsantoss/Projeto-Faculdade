@@ -10,7 +10,7 @@ import {
 import { useToast } from '../shared/ui';
 import { AtelierApi, apiCode, apiMessage } from '../services/api';
 import { log, logAlerta } from '../lib/debug';
-import type { OrderSummary, Product, SessionState } from '../types';
+import type { ChallengeState, OrderSummary, PickResult, Product, SessionState } from '../types';
 
 type Status = 'loading' | 'ready' | 'error';
 
@@ -39,7 +39,9 @@ interface SessionApi {
   open: () => void;
   close: () => void;
 
-  unlockProduct: (productId: string, moves: number, seconds: number) => Promise<boolean>;
+  openChallenge: (productId: string) => Promise<ChallengeState | null>;
+  resetChallenge: (productId: string) => Promise<ChallengeState | null>;
+  submitPick: (productId: string, index: number) => Promise<PickResult | null>;
   addToCart: (productId: string) => Promise<boolean>;
   setQuantity: (productId: string, quantity: number) => Promise<void>;
   removeFromCart: (productId: string) => Promise<void>;
@@ -131,14 +133,32 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     [push],
   );
 
-  const unlockProduct = useCallback(
-    async (productId: string, moves: number, seconds: number) => {
+  const openChallenge = useCallback(
+    (productId: string) =>
+      mutate('abrir desafio', () => AtelierApi.challenge(productId), () => undefined),
+    [mutate],
+  );
+
+  const resetChallenge = useCallback(
+    (productId: string) =>
+      mutate('sortear outra palavra', () => AtelierApi.resetChallenge(productId), () => undefined),
+    [mutate],
+  );
+
+  /**
+   * Envia o copo escolhido. Quem decide se acertou é o servidor — a resposta
+   * traz a sessão já atualizada, e é ela que aplicamos aqui.
+   */
+  const submitPick = useCallback(
+    async (productId: string, index: number) => {
       const result = await mutate(
-        'desbloqueio',
-        () => AtelierApi.unlock(productId, moves, seconds),
-        setSession,
+        'escolha',
+        () => AtelierApi.pick(productId, index),
+        ({ session: next }) => setSession(next),
       );
-      return result !== null;
+      if (!result) return null;
+      const { correct, ballIndex, challenge } = result;
+      return { correct, ballIndex, challenge };
     },
     [mutate],
   );
@@ -193,7 +213,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       isOpen,
       open,
       close,
-      unlockProduct,
+      openChallenge,
+      resetChallenge,
+      submitPick,
       addToCart,
       setQuantity,
       removeFromCart,
@@ -210,7 +232,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       isOpen,
       open,
       close,
-      unlockProduct,
+      openChallenge,
+      resetChallenge,
+      submitPick,
       addToCart,
       setQuantity,
       removeFromCart,

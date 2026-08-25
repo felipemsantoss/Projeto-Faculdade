@@ -1,19 +1,3 @@
-export type GlyphName =
-  | 'arc'
-  | 'grid'
-  | 'helix'
-  | 'vector'
-  | 'ring'
-  | 'shard'
-  | 'wave'
-  | 'node'
-  | 'cross'
-  | 'lens'
-  | 'stack'
-  | 'pulse'
-  | 'orbit'
-  | 'prism';
-
 export type ArtworkVariant = 'monolith' | 'bloom' | 'solstice' | 'orbit' | 'aperture' | 'halo';
 
 export interface Product {
@@ -23,7 +7,7 @@ export interface Product {
   name: string;
   category: string;
   price: number;
-  /** Frase curta, usada em destaque no palco do produto. */
+  /** Frase curta, usada em destaque na revelação do produto. */
   tagline: string;
   description: string;
   material: string;
@@ -33,8 +17,6 @@ export interface Product {
   /** Tom profundo usado nos fundos gerados. */
   accentDeep: string;
   artwork: ArtworkVariant;
-  /** Os 8 símbolos que formam os pares do desafio deste produto. */
-  glyphs: GlyphName[];
 }
 
 export interface CartLine {
@@ -63,16 +45,35 @@ export interface SessionState {
   orders: OrderSummary[];
 }
 
-/** Fases da experiência — o clique no produto vai direto ao minigame. */
-export type Phase = 'catalog' | 'game' | 'unlocked';
-
-export type CardState = 'hidden' | 'revealed' | 'matched';
-
-export interface MemoryCard {
-  /** Identificador único da carta (duas cartas por par). */
-  id: string;
-  /** Identificador do par — duas cartas com o mesmo pairId combinam. */
-  pairId: number;
-  glyph: GlyphName;
-  state: CardState;
+/**
+ * Uma rodada do jogo dos três copos, como a API devolve.
+ *
+ * O plano de trocas vem junto porque é ele que o cliente precisa para animar
+ * o embaralhamento. Onde a bolinha parou, não — isso fica no servidor até a
+ * escolha ser feita.
+ */
+export interface ChallengeState {
+  productId: string;
+  /** Quantos copos há na mesa. */
+  cups: number;
+  round: number;
+  totalRounds: number;
+  /** Posição em que a bolinha entrou, antes das trocas. */
+  startIndex: number;
+  /** Cada par são duas posições que trocam de lugar. */
+  trocas: Array<[number, number]>;
+  /** Duração de cada troca, em milissegundos. */
+  swapMs: number;
+  status: 'playing' | 'won' | 'lost';
 }
+
+export interface PickResult {
+  correct: boolean;
+  /** Onde a bolinha realmente estava — revelado só depois da escolha. */
+  ballIndex: number;
+  /** A rodada seguinte, ou a mesma já encerrada. */
+  challenge: ChallengeState;
+}
+
+/** Fases da experiência — o clique no produto vai direto ao desafio. */
+export type Phase = 'catalog' | 'game' | 'unlocked';

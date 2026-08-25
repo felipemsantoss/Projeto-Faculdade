@@ -1,3 +1,2 @@
-/** Etapa 03 — o desafio de memória que destrava a compra. */
-export { MemoryGame } from './MemoryGame';
-export { useMemoryGame } from './useMemoryGame';
+/** Etapa 02 — o jogo dos três copos, que destrava a compra. */
+export { ShellGame } from './ShellGame';

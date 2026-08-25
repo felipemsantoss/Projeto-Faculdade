@@ -1,11 +1,12 @@
 # ATELIER NOIR
 
 E-commerce experimental onde a compra é a recompensa: cada peça do catálogo
-está lacrada por um desafio de memória. O usuário escolhe um objeto, encontra
-os oito pares e só então o botão de compra existe.
+está lacrada pelo jogo dos três copos. O usuário escolhe um objeto, segue a
+bolinha por três rodadas cada vez mais rápidas e só então o botão de compra
+existe.
 
 ```
-CATÁLOGO → clique no produto → MINIGAME → pares → PEÇA DESBLOQUEADA → carrinho → checkout
+CATÁLOGO → clique no produto → SIGA A BOLINHA (3 rodadas) → PEÇA DESBLOQUEADA → carrinho
 ```
 
 Front em React + TypeScript, back em Express + TypeScript. Todo o estado de
@@ -48,7 +49,9 @@ apenas esse identificador.
 | GET    | `/api/products`         | catálogo                             |
 | GET    | `/api/session`          | peças desbloqueadas + carrinho       |
 | POST   | `/api/session/relock`   | relacra todas as peças (chamado ao carregar) |
-| POST   | `/api/session/unlock`   | registra o minigame vencido          |
+| POST   | `/api/challenge`        | abre o desafio da peça               |
+| POST   | `/api/challenge/reset`  | recomeça da primeira rodada          |
+| POST   | `/api/challenge/pick`   | envia o copo escolhido; acertar avança |
 | POST   | `/api/cart`             | adiciona ao carrinho                 |
 | PATCH  | `/api/cart/:productId`  | altera a quantidade                  |
 | DELETE | `/api/cart/:productId`  | remove o item                        |
@@ -62,8 +65,9 @@ o que está liberado.
 
 | Situação                                        | Resposta               |
 | ----------------------------------------------- | ---------------------- |
-| Adicionar peça que não passou pelo minigame     | `409 PRODUCT_LOCKED`   |
-| Desbloquear com menos de 8 jogadas (impossível) | `422 INVALID_RESULT`   |
+| Adicionar peça que não venceu o desafio         | `409 PRODUCT_LOCKED`   |
+| Copo fora do intervalo                          | `400 INVALID_PICK`     |
+| Escolher depois da rodada encerrada             | `409 CHALLENGE_OVER`   |
 | Quantidade fora de 0–9                          | `400 INVALID_QUANTITY` |
 | Peça inexistente                                | `404 PRODUCT_NOT_FOUND`|
 | Fechar pedido com carrinho vazio                | `422 EMPTY_CART`       |
@@ -82,6 +86,7 @@ aparece, sabe em que pasta olhar.
 ```
 server/                         ── A API REST ──
 ├── index.ts                    rotas, validações e regras de negócio
+├── shell.ts                    ← as regras do jogo: sorteio, trocas, dificuldade
 └── db.ts                       persistência em arquivo
 
 src/
@@ -98,10 +103,9 @@ src/
 │   │   ├── Carousel.tsx        carrossel 3D: arraste, inércia, encaixe
 │   │   └── index.ts
 │   ├── minigame/               02 · o desafio que destrava a compra
-│   │   ├── MemoryGame.tsx      orquestra tabuleiro, HUD e vitória
-│   │   ├── MemoryCardTile.tsx  a carta que gira em 3D
-│   │   ├── GameHud.tsx         pares / jogadas / tempo
-│   │   ├── useMemoryGame.ts    ← TODAS as regras do jogo
+│   │   ├── ShellGame.tsx      rodadas, embaralhamento e desfecho
+│   │   ├── Cup.tsx            o copo, desenhado em SVG
+│   │   ├── shellgame.css      mesa, cruzamentos, faíscas
 │   │   └── index.ts
 │   ├── unlock/                 03 · a recompensa
 │   │   ├── UnlockReveal.tsx    ← o botão "Adicionar ao carrinho"
@@ -122,7 +126,7 @@ src/
 │
 ├── hooks/                      Genéricos: mídia, foco, rolagem
 ├── lib/                        debug, cor, formatação, embaralhamento
-├── data/                       products.ts (catálogo) e glyphs.tsx (símbolos)
+├── data/                       products.ts — o catálogo
 └── styles/                     tokens.css é o sistema visual inteiro
 ```
 
@@ -131,7 +135,7 @@ leem como a própria jornada:
 
 ```ts
 import { Carousel, Hero } from './features/catalog';
-import { MemoryGame } from './features/minigame';
+import { ShellGame } from './features/minigame';
 import { CartDrawer, flyToCart } from './features/cart';
 ```
 
@@ -162,7 +166,7 @@ Como ler: **se uma linha não aparece, o fluxo parou na anterior.**
 | --------------------- | ---------------------------------------------------- |
 | `UI botão acionado`   | antes do React — o clique nem chegou ao componente    |
 | `passo 1/4`           | não há produto em foco no `ExperienceContext`         |
-| `passo 2/4`           | a peça não passou pelo minigame (sai um ALERTA)       |
+| `passo 2/4`           | a peça não venceu o desafio (sai um ALERTA)           |
 | `API → POST /cart`    | o voo travou antes de chamar a API                    |
 | `API ← 201`           | a API recusou ou não respondeu — o código diz qual    |
 
@@ -180,7 +184,7 @@ Canais: `API`, `FASE`, `CATÁLOGO`, `PRODUTO`, `JOGO`, `CARRINHO`, `ANIMAÇÃO`,
 
 ## Duas regras do projeto
 
-**1. Nenhuma peça entra na sacola sem passar pelo minigame.** Quem decide é a
+**1. Nenhuma peça entra na sacola sem vencer o desafio.** Quem decide é a
 API (`409 PRODUCT_LOCKED`). O front repete a checagem só por cortesia: evita
 uma ida ao servidor que já sabemos que seria recusada e leva a pessoa ao
 desafio em vez de mostrar um erro.
@@ -204,7 +208,7 @@ regra.)
 | ---- | ----- |
 | Desktop | rolagem (roda/trackpad), setas na tela, teclado (←/→, Home/End) |
 | Toque | deslizar o dedo |
-| Abrir o produto | clicar no card central — vai direto ao minigame |
+| Abrir o produto | clicar no card central — vai direto ao jogo |
 
 **Recarregar a página relacra tudo.** O desbloqueio vale só enquanto a página
 está aberta: ao carregar, o front chama `POST /api/session/relock` e toda peça
@@ -233,11 +237,25 @@ preciso disparar `pointerdown`/`pointerup` de verdade.
 nas pontas. Em repouso o loop detecta que nada mudou e para de escrever.
 Suporta arraste, roda, setas, `Home`/`End` e foco-centraliza.
 
-**Minigame** — `useMemoryGame` é um reducer: todo clique inválido (tabuleiro
-travado, carta já aberta, clique repetido) morre lá dentro **e vira log**. As
-cartas giram de verdade (`rotateY` sobre `preserve-3d`), nunca por troca de
-conteúdo. Cada acerto desenha um fio de luz entre as duas cartas. Ao terminar,
-o resultado (jogadas e segundos) é enviado à API, que valida antes de liberar.
+**Jogo dos três copos** — três rodadas, cada uma mais difícil que a anterior:
+5, 7 e 9 trocas, a 620, 470 e 320 ms por troca. Errar encerra a tentativa,
+revela onde a bolinha estava e oferece recomeçar.
+
+A parte que importa: **a bolinha pertence a um copo, não a uma posição**. O
+servidor sorteia onde ela entra e o plano de trocas; o cliente recebe esse
+plano para conseguir animar o embaralhamento, mas quem calcula onde ela parou
+é o servidor, e é contra esse cálculo que a escolha é conferida. O `finalIndex`
+não sai do servidor até a escolha ser feita, e o cliente não tem como afirmar
+que venceu — o desbloqueio nasce em `POST /api/challenge/pick`.
+
+O cliente ainda faz uma conferência própria: se a posição onde a animação
+deixou a bolinha não bater com a que o servidor informou, sai um ALERTA no
+console. Numa partida inteira esse contador tem de ficar em zero.
+
+Sobre o embaralhamento: os copos não se teletransportam. Cada troca move os
+dois copos por transição de CSS com easing, e um deles ganha altura e frente
+enquanto o outro recua — é esse desencontro que faz o movimento parecer um
+cruzamento, e não dois objetos deslizando um através do outro.
 
 **Produtos** — nenhuma imagem externa: cada peça é um SVG desenhado a partir da
 própria paleta, em três camadas que se movem em ritmos diferentes para o
@@ -247,7 +265,7 @@ carrossel, cartas e carrinho. A API serve esse mesmo arquivo em `/api/products`.
 ## Acessibilidade
 
 - Todos os quatro níveis de texto ficam acima de 4,5:1 contra o fundo.
-- Cartas, cards e controles são `<button>` de verdade — teclado funciona em tudo.
+- Copos, cards e controles são `<button>` de verdade — teclado funciona em tudo.
 - Foco preso e `Esc` na gaveta; foco devolvido à origem ao fechar.
 - Mudanças de fase e de progresso são anunciadas via `aria-live`.
 - `prefers-reduced-motion` encurta as animações no CSS e no framer-motion

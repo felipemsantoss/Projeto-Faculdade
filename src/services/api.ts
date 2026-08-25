@@ -1,6 +1,6 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { log, logAlerta } from '../lib/debug';
-import type { OrderSummary, Product, SessionState } from '../types';
+import type { ChallengeState, OrderSummary, PickResult, Product, SessionState } from '../types';
 
 const SESSION_KEY = 'atelier-noir:session';
 
@@ -99,11 +99,25 @@ export const AtelierApi = {
    */
   relock: () => api.post<SessionState>('/session/relock').then((r) => r.data),
 
-  /** Registra o minigame vencido. O servidor confere o resultado. */
-  unlock: (productId: string, moves: number, seconds: number) =>
-    api.post<SessionState>('/session/unlock', { productId, moves, seconds }).then((r) => r.data),
+  /** Abre o desafio da peça (ou devolve a rodada em andamento). */
+  challenge: (productId: string) =>
+    api.post<ChallengeState>('/challenge', { productId }).then((r) => r.data),
 
-  /** Devolve 409 PRODUCT_LOCKED se a peça não passou pelo minigame. */
+  /** Recomeça da primeira rodada, com bolinha e trocas novas. */
+  resetChallenge: (productId: string) =>
+    api.post<ChallengeState>('/challenge/reset', { productId }).then((r) => r.data),
+
+  /**
+   * Envia o copo escolhido. Quem confere é o servidor, com a posição que só
+   * ele calculou — vencer a última rodada libera a compra, e a resposta traz
+   * a sessão já atualizada.
+   */
+  pick: (productId: string, index: number) =>
+    api
+      .post<PickResult & { session: SessionState }>('/challenge/pick', { productId, index })
+      .then((r) => r.data),
+
+  /** Devolve 409 PRODUCT_LOCKED se a peça não venceu o desafio. */
   addToCart: (productId: string, quantity = 1) =>
     api.post<SessionState>('/cart', { productId, quantity }).then((r) => r.data),
 

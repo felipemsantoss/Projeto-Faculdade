@@ -1,0 +1,427 @@
+.shell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(0.9rem, 2.4vh, 1.6rem);
+  width: 100%;
+  padding: clamp(5rem, 11vh, 7rem) var(--gutter) clamp(1.5rem, 4vh, 2.5rem);
+  text-align: center;
+}
+
+/* ---------- Cabeçalho ---------- */
+
+.shell__head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.shell__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-family: var(--font-mono);
+  font-size: var(--micro);
+  letter-spacing: var(--track-micro);
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.shell__eyebrow-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: currentColor;
+  animation: shell-breathe 2.4s var(--ease-in-out-quint) infinite;
+}
+
+@keyframes shell-breathe {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.72); }
+}
+
+.shell__title {
+  font-size: var(--display-3);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+/* Rodadas: três selos que vão sendo preenchidos. */
+.shell__rounds {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.15rem;
+}
+
+.shell__round {
+  display: grid;
+  place-items: center;
+  min-width: 34px;
+  padding: 0.28rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--text-faint);
+  transition: color var(--dur-mid) var(--ease-out-expo), border-color var(--dur-mid) var(--ease-out-expo),
+    background var(--dur-mid) var(--ease-out-expo);
+}
+
+.shell__round.is-current {
+  color: var(--ink-000);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.shell__round.is-done {
+  color: var(--accent);
+  border-color: var(--accent-line);
+}
+
+/* ---------- Mesa ---------- */
+
+.shell__table {
+  --copo-w: clamp(4.75rem, 20vw, 7.5rem);
+  --gap: clamp(0.9rem, 4vw, 2.25rem);
+  --passo: calc(var(--copo-w) + var(--gap));
+  --copo-h: calc(var(--copo-w) * 1.18);
+
+  position: relative;
+  width: calc(var(--copo-w) * 3 + var(--gap) * 2);
+  height: calc(var(--copo-h) + 4.5rem);
+  margin-top: clamp(0.5rem, 2vh, 1.25rem);
+}
+
+/* Linha do chão — dá o plano onde os copos se apoiam. */
+.shell__table::after {
+  content: '';
+  position: absolute;
+  left: -6%;
+  right: -6%;
+  bottom: 2.5rem;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--line-strong), transparent);
+}
+
+/* ---------- Bolinha ---------- */
+
+.shell__ball {
+  position: absolute;
+  left: 0;
+  bottom: 2.5rem;
+  width: var(--copo-w);
+  display: grid;
+  place-items: center;
+  transform: translateX(calc(var(--pos) * var(--passo)));
+  opacity: 0;
+  transition: transform var(--swap, 500ms) var(--ease-in-out-quint), opacity 200ms linear;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.shell__ball.is-visible {
+  opacity: 1;
+}
+
+.shell__ball-core {
+  position: relative;
+  z-index: 1;
+  width: clamp(1.1rem, 4.5vw, 1.6rem);
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: radial-gradient(circle at 34% 30%, #ffffff, var(--accent) 58%, var(--accent) 100%);
+  box-shadow: 0 0 18px -2px var(--accent), 0 6px 12px -6px rgba(0, 0, 0, 0.9);
+}
+
+.shell__ball-glow {
+  position: absolute;
+  width: 200%;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: radial-gradient(circle, var(--accent-soft), transparent 68%);
+}
+
+/* A entrada da bolinha: cai de cima e assenta com um quique curto. */
+.shell__table.is-entrando .shell__ball-core {
+  animation: bola-cai 780ms var(--ease-out-expo) both;
+}
+
+@keyframes bola-cai {
+  0% { transform: translateY(-190px) scale(0.7); opacity: 0; }
+  55% { transform: translateY(0) scale(1.06); opacity: 1; }
+  70% { transform: translateY(-16px) scale(0.97); }
+  85% { transform: translateY(0) scale(1.03); }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* Na revelação do acerto ela cresce e pulsa. */
+.shell__table.is-revelando .shell__ball-core,
+.shell__table.is-won .shell__ball-core {
+  animation: bola-revela 620ms var(--ease-spring) both;
+}
+
+@keyframes bola-revela {
+  0% { transform: scale(0.4); }
+  60% { transform: scale(1.28); }
+  100% { transform: scale(1.08); }
+}
+
+/* ---------- Copo ---------- */
+
+.copo {
+  position: absolute;
+  left: 0;
+  bottom: 2.5rem;
+  width: var(--copo-w);
+  padding: 0;
+  z-index: 20;
+  transform: translateX(calc(var(--pos) * var(--passo))) translateY(var(--erguer, 0px)) translateY(var(--arco, 0px));
+  transition:
+    transform var(--swap, 500ms) cubic-bezier(0.45, 0.05, 0.25, 1),
+    filter var(--dur-mid) var(--ease-out-expo);
+}
+
+/* Quem cruza por cima ganha altura e frente; quem passa por baixo, recua.
+   É esse desencontro que faz o movimento parecer um cruzamento de verdade,
+   e não dois copos deslizando um através do outro. */
+.copo[data-passe='frente'] {
+  --arco: 16px;
+  z-index: 30;
+}
+
+.copo[data-passe='fundo'] {
+  --arco: -22px;
+  z-index: 10;
+}
+
+.copo.is-erguido {
+  --erguer: calc(var(--copo-h) * -0.72);
+}
+
+.copo__corpo {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.55));
+}
+
+.copo__aro {
+  transition: opacity var(--dur-mid) var(--ease-out-expo), stroke-width var(--dur-mid) var(--ease-out-expo);
+}
+
+/* Sombra no chão: encolhe quando o copo sobe. */
+.copo__sombra {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: -0.7rem;
+  height: 0.75rem;
+  border-radius: 999px;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.65), transparent 70%);
+  transform: scale(var(--sombra, 1));
+  opacity: var(--sombra-op, 0.9);
+  transition: transform var(--dur-mid) var(--ease-out-expo), opacity var(--dur-mid) var(--ease-out-expo);
+}
+
+.copo.is-erguido .copo__sombra {
+  --sombra: 0.72;
+  --sombra-op: 0.45;
+}
+
+/* Marca de seleção — um anel que aparece no estado do resultado. */
+.copo__marca {
+  position: absolute;
+  inset: auto 6% -0.4rem;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--accent);
+  opacity: 0;
+  transform: scaleX(0.4);
+  transition: opacity var(--dur-mid) var(--ease-out-expo), transform var(--dur-mid) var(--ease-spring);
+}
+
+/* ---------- Interação ---------- */
+
+.copo:disabled {
+  cursor: default;
+}
+
+.copo:not(:disabled) {
+  cursor: pointer;
+}
+
+.copo:not(:disabled):hover {
+  --erguer: -14px;
+}
+
+.copo:not(:disabled):hover .copo__aro,
+.copo:not(:disabled):focus-visible .copo__aro {
+  opacity: 1;
+  stroke-width: 3.4;
+}
+
+.copo:not(:disabled):hover .copo__marca {
+  opacity: 0.5;
+  transform: scaleX(1);
+}
+
+.copo:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 6px;
+  border-radius: var(--radius-s);
+}
+
+/* ---------- Resultado ---------- */
+
+.copo.is-acerto .copo__corpo {
+  filter: drop-shadow(0 0 26px var(--accent)) drop-shadow(0 14px 18px rgba(0, 0, 0, 0.55));
+}
+
+.copo.is-acerto .copo__marca {
+  opacity: 1;
+  transform: scaleX(1);
+  height: 3px;
+  box-shadow: 0 0 14px var(--accent);
+}
+
+.copo.is-acerto {
+  animation: copo-comemora 700ms var(--ease-spring);
+}
+
+@keyframes copo-comemora {
+  0%, 100% { scale: 1; }
+  40% { scale: 1.07; }
+}
+
+/* O copo errado: sem vermelho gritante, só um recuo e um traço apagado. */
+.copo.is-erro .copo__corpo {
+  filter: grayscale(0.5) brightness(0.72) drop-shadow(0 10px 14px rgba(0, 0, 0, 0.6));
+}
+
+.copo.is-erro .copo__marca {
+  opacity: 1;
+  transform: scaleX(1);
+  background: #c2444d;
+}
+
+.copo.is-erro {
+  animation: copo-nega 480ms var(--ease-out-expo);
+}
+
+@keyframes copo-nega {
+  0%, 100% { translate: 0 0; }
+  25% { translate: -7px 0; }
+  55% { translate: 5px 0; }
+  80% { translate: -2px 0; }
+}
+
+/* O copo que guardava a bolinha, quando o jogador erra. */
+.copo.is-alvo .copo__marca {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.copo.is-alvo .copo__corpo {
+  filter: drop-shadow(0 0 20px var(--accent-soft)) drop-shadow(0 14px 18px rgba(0, 0, 0, 0.55));
+}
+
+/* ---------- Faíscas da comemoração ---------- */
+
+.shell__faiscas {
+  position: absolute;
+  left: 0;
+  bottom: 3.2rem;
+  width: var(--copo-w);
+  display: grid;
+  place-items: center;
+  transform: translateX(calc(var(--pos) * var(--passo)));
+  pointer-events: none;
+  z-index: 25;
+}
+
+.shell__faisca {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--accent);
+  animation: faisca 760ms var(--ease-out-expo) both;
+  animation-delay: calc(var(--i) * 22ms);
+  /* Cada faísca sai num ângulo diferente do círculo. */
+  rotate: calc(var(--i) * 36deg);
+}
+
+@keyframes faisca {
+  0% { translate: 0 0; opacity: 1; scale: 1; }
+  100% { translate: 0 -86px; opacity: 0; scale: 0.3; }
+}
+
+/* ---------- Instrução ---------- */
+
+.shell__instrucao {
+  min-height: 1.4em;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  transition: color var(--dur-mid) var(--ease-out-expo);
+}
+
+.shell__instrucao.is-win {
+  color: var(--accent);
+}
+
+.shell__instrucao.is-lost {
+  color: var(--text-dim);
+}
+
+/* ---------- Rodapé ---------- */
+
+.shell__foot {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.shell__sep {
+  width: 1px;
+  height: 14px;
+  background: var(--line-strong);
+}
+
+/* ---------- Telas pequenas e baixas ---------- */
+
+@media (max-width: 420px) {
+  .shell__table {
+    --copo-w: min(26vw, 5.5rem);
+    --gap: 0.75rem;
+  }
+}
+
+@media (max-height: 760px) {
+  .shell {
+    padding-top: 4.75rem;
+    gap: 0.7rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shell__eyebrow-dot,
+  .shell__table.is-entrando .shell__ball-core,
+  .shell__table.is-revelando .shell__ball-core,
+  .shell__table.is-won .shell__ball-core,
+  .copo.is-acerto,
+  .copo.is-erro,
+  .shell__faisca {
+    animation: none;
+  }
+
+  .shell__faiscas {
+    display: none;
+  }
+}

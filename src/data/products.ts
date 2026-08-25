@@ -19,7 +19,6 @@ export const PRODUCTS: Product[] = [
     accent: '#a78bfa',
     accentDeep: '#2a1f52',
     artwork: 'monolith',
-    glyphs: ['arc', 'grid', 'helix', 'vector', 'ring', 'shard', 'wave', 'node'],
   },
   {
     id: 'vertex',
@@ -35,7 +34,6 @@ export const PRODUCTS: Product[] = [
     accent: '#bef264',
     accentDeep: '#2b3312',
     artwork: 'bloom',
-    glyphs: ['lens', 'stack', 'pulse', 'orbit', 'prism', 'arc', 'grid', 'vector'],
   },
   {
     id: 'nova',
@@ -51,7 +49,6 @@ export const PRODUCTS: Product[] = [
     accent: '#fbbf24',
     accentDeep: '#3a2a08',
     artwork: 'solstice',
-    glyphs: ['ring', 'orbit', 'prism', 'wave', 'node', 'cross', 'lens', 'pulse'],
   },
   {
     id: 'orbit',
@@ -67,7 +64,6 @@ export const PRODUCTS: Product[] = [
     accent: '#5eead4',
     accentDeep: '#0d3b36',
     artwork: 'orbit',
-    glyphs: ['helix', 'wave', 'node', 'cross', 'shard', 'stack', 'ring', 'arc'],
   },
   {
     id: 'apex',
@@ -83,7 +79,6 @@ export const PRODUCTS: Product[] = [
     accent: '#fb7185',
     accentDeep: '#43121f',
     artwork: 'aperture',
-    glyphs: ['prism', 'lens', 'shard', 'vector', 'grid', 'cross', 'orbit', 'pulse'],
   },
   {
     id: 'halo',
@@ -99,7 +94,6 @@ export const PRODUCTS: Product[] = [
     accent: '#93c5fd',
     accentDeep: '#152b4d',
     artwork: 'halo',
-    glyphs: ['ring', 'arc', 'wave', 'lens', 'helix', 'stack', 'node', 'prism'],
   },
 ];
 

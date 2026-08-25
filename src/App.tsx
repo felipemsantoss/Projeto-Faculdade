@@ -2,7 +2,7 @@ import { MotionConfig } from 'framer-motion';
 import { useCallback, useEffect, type ReactNode } from 'react';
 import { CartDrawer, flyToCart } from './features/cart';
 import { Carousel, Hero } from './features/catalog';
-import { MemoryGame } from './features/minigame';
+import { ShellGame } from './features/minigame';
 import { UnlockReveal } from './features/unlock';
 import { Boot, TopBar } from './shared/chrome';
 import { ToastProvider } from './shared/ui';
@@ -115,7 +115,7 @@ function Experience() {
             de entrada do CSS. Sem produto em foco, o catálogo é o destino. */}
         <Scene key={product ? `${phase}-${product.id}` : phase} phase={product ? phase : 'catalog'}>
           {phase === 'game' && product ? (
-            <MemoryGame key={product.id} product={product} onComplete={completeChallenge} />
+            <ShellGame key={product.id} product={product} onComplete={completeChallenge} />
           ) : phase === 'unlocked' && product ? (
             <UnlockReveal product={product} onAddToCart={handleAddToCart} />
           ) : (

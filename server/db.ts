@@ -18,11 +18,29 @@ export interface OrderRow {
   total: number;
 }
 
+export type ChallengeStatus = 'playing' | 'won' | 'lost';
+
+export interface ChallengeRow {
+  status: ChallengeStatus;
+  /** Rodada atual, de 1 até o total. */
+  round: number;
+  /** Posição em que a bolinha entrou nesta rodada. */
+  startIndex: number;
+  /** O plano de trocas que o cliente vai animar. */
+  trocas: Array<[number, number]>;
+  /** Duração de cada troca, em milissegundos. */
+  swapMs: number;
+  /** Onde a bolinha parou — a verdade do servidor, conferida na escolha. */
+  finalIndex: number;
+}
+
 export interface Session {
   id: string;
   createdAt: string;
-  /** Peças cujo minigame já foi vencido. */
+  /** Peças cujo desafio já foi vencido. */
   unlocked: string[];
+  /** Um desafio dos três copos por produto. */
+  challenges: Record<string, ChallengeRow>;
   cart: CartRow[];
   orders: OrderRow[];
 }
@@ -61,12 +79,17 @@ function persist(): void {
 
 export function getSession(id: string): Session {
   const existing = db.sessions[id];
-  if (existing) return existing;
+  if (existing) {
+    // Sessões gravadas por versões anteriores não têm o campo de desafios.
+    if (!existing.challenges) existing.challenges = {};
+    return existing;
+  }
 
   const created: Session = {
     id,
     createdAt: new Date().toISOString(),
     unlocked: [],
+    challenges: {},
     cart: [],
     orders: [],
   };

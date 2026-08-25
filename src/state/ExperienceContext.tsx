@@ -25,7 +25,8 @@ interface ExperienceApi {
   select: (product: Product) => void;
   beginChallenge: () => void;
   /** Envia o resultado do minigame à API; só avança se o servidor aceitar. */
-  completeChallenge: (result: { moves: number; seconds: number }) => void;
+  /** Chamado quando a API confirma a vitória — a peça já está liberada. */
+  completeChallenge: () => void;
   exit: () => void;
 }
 
@@ -38,7 +39,7 @@ const FALLBACK_ACCENT = '#a78bfa';
  * conduz. Quem sabe o que está desbloqueado é o servidor, via SessionContext.
  */
 export function ExperienceProvider({ children }: { children: ReactNode }) {
-  const { products, unlockProduct, isUnlocked } = useSession();
+  const { products, isUnlocked } = useSession();
 
   const [phase, setPhase] = useState<Phase>('catalog');
   const [product, setProduct] = useState<Product | null>(null);
@@ -79,25 +80,14 @@ export function ExperienceProvider({ children }: { children: ReactNode }) {
     setPhase('game');
   }, []);
 
-  const completeChallenge = useCallback(
-    ({ moves, seconds }: { moves: number; seconds: number }) => {
-      if (!product) return;
-      log('fase', 'minigame vencido — registrando na API', { id: product.id, moves, seconds });
-
-      void unlockProduct(product.id, moves, seconds).then((ok) => {
-        if (!ok) {
-          // A API recusou o resultado: volta ao catálogo, peça ainda lacrada.
-          log('fase', 'API recusou o desbloqueio — voltando ao catálogo');
-          setPhase('catalog');
-          setProduct(null);
-          return;
-        }
-        log('fase', 'desbloqueio confirmado pela API → revelação');
-        setPhase('unlocked');
-      });
-    },
-    [product, unlockProduct],
-  );
+  /**
+   * A vitória nasce no servidor: quem acerta a palavra é validado lá, e a
+   * peça já vem desbloqueada na resposta. Aqui só trocamos de cena.
+   */
+  const completeChallenge = useCallback(() => {
+    log('fase', 'desafio vencido → revelação da peça');
+    setPhase('unlocked');
+  }, []);
 
   const exit = useCallback(() => {
     log('fase', 'voltando ao catálogo');
