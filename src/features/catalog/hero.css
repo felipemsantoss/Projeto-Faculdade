@@ -1,0 +1,102 @@
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(0.6rem, 1.3vh, 1rem);
+  text-align: center;
+  /* Curto de propósito: o catálogo é o protagonista da tela. */
+  padding: clamp(5rem, 10vh, 6.75rem) var(--gutter) clamp(0.75rem, 2vh, 1.5rem);
+  max-width: 62rem;
+  margin: 0 auto;
+}
+
+.hero__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-family: var(--font-mono);
+  font-size: var(--micro);
+  letter-spacing: var(--track-micro);
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+.hero__eyebrow-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+  transition: background var(--dur-slow) var(--ease-out-expo), box-shadow var(--dur-slow) var(--ease-out-expo);
+}
+
+.hero__title {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--display-2);
+  font-weight: 400;
+  letter-spacing: -0.045em;
+  line-height: 0.94;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.hero__title:focus-visible {
+  outline-offset: 12px;
+}
+
+.hero__line {
+  display: block;
+}
+
+/* A palavra que carrega o conceito muda de voz — serifa, itálico, cor do produto. */
+.hero__title em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  text-transform: none;
+  letter-spacing: -0.02em;
+  color: var(--accent);
+  transition: color var(--dur-slow) var(--ease-out-expo);
+}
+
+.hero__note {
+  max-width: 42ch;
+  font-size: 0.94rem;
+  line-height: 1.6;
+  color: var(--text-mute);
+  text-wrap: pretty;
+}
+
+.hero__note-strong {
+  color: var(--text-dim);
+}
+
+@media (max-width: 720px) {
+  .hero {
+    padding-top: clamp(4.75rem, 14vh, 6rem);
+  }
+
+  .hero__note {
+    font-size: 0.86rem;
+  }
+}
+
+/* Em telas baixas o hero se comprime, mas a instrução continua na tela:
+   é ela que responde "o que eu faço aqui?". */
+@media (max-height: 780px) and (min-width: 721px) {
+  .hero {
+    padding-top: 5.25rem;
+    padding-bottom: 0.75rem;
+    gap: 0.45rem;
+  }
+
+  .hero__title {
+    font-size: clamp(1.9rem, 4.6vw, 3.4rem);
+  }
+
+  .hero__note {
+    font-size: 0.82rem;
+    line-height: 1.45;
+    max-width: 54ch;
+  }
+}

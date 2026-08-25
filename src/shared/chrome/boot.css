@@ -1,0 +1,120 @@
+.boot {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  padding: var(--gutter);
+  background:
+    radial-gradient(60% 45% at 50% 20%, var(--accent-soft), transparent 70%),
+    var(--ink-000);
+  text-align: center;
+}
+
+.boot__inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  max-width: 34rem;
+}
+
+.boot__mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--accent-line);
+  margin-bottom: 0.6rem;
+  animation: boot-pulse 1.6s var(--ease-in-out-quint) infinite;
+}
+
+.boot__mark--error {
+  border-color: var(--text-faint);
+  border-style: dashed;
+  animation: none;
+}
+
+@keyframes boot-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 var(--accent-soft); }
+  50% { transform: scale(0.82); opacity: 0.5; box-shadow: 0 0 0 10px transparent; }
+}
+
+.boot__brand {
+  font-family: var(--font-mono);
+  font-size: var(--micro);
+  letter-spacing: var(--track-micro);
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+.boot__brand span {
+  color: var(--accent);
+  margin-left: 0.4em;
+}
+
+.boot__title {
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.boot__message {
+  max-width: 44ch;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text-mute);
+  text-wrap: pretty;
+}
+
+.boot__hint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  margin: 0.5rem 0 0.4rem;
+  padding: 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+  background: rgba(14, 14, 19, 0.6);
+}
+
+.boot__hint-label {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.boot__code {
+  display: block;
+  padding: 0.6rem 1.1rem;
+  border-radius: var(--radius-s);
+  background: var(--ink-200);
+  border: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--accent);
+  user-select: all;
+}
+
+.boot__hint-note {
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--text-faint);
+}
+
+.boot__hint-note strong {
+  font-weight: 500;
+  color: var(--text-mute);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .boot__mark {
+    animation: none;
+  }
+}

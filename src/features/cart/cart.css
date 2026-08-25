@@ -1,0 +1,342 @@
+.cart {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+}
+
+.cart__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 4, 6, 0.62);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.cart__panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(30rem, 100vw);
+  display: flex;
+  flex-direction: column;
+  background: var(--ink-050);
+  border-left: 1px solid var(--line);
+  box-shadow: -40px 0 90px -50px rgba(0, 0, 0, 1);
+}
+
+/* ---------- Cabeçalho ---------- */
+
+.cart__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.6rem var(--gutter) 1.2rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.cart__eyebrow {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 0.35rem;
+}
+
+.cart__title {
+  font-size: 1.5rem;
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+}
+
+.cart__close {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--text-dim);
+  transition: color var(--dur-fast) var(--ease-out-expo), border-color var(--dur-fast) var(--ease-out-expo),
+    transform var(--dur-fast) var(--ease-spring);
+}
+
+.cart__close svg {
+  width: 16px;
+  height: 16px;
+}
+
+.cart__close:hover {
+  color: var(--text);
+  border-color: var(--line-strong);
+  transform: rotate(90deg);
+}
+
+/* ---------- Corpo ---------- */
+
+.cart__body {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 var(--gutter);
+}
+
+.cart__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.cart__line {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid var(--line);
+  overflow: hidden;
+}
+
+.cart__thumb {
+  display: block;
+  width: 72px;
+  height: 92px;
+  border-radius: var(--radius-s);
+  overflow: hidden;
+  background: var(--ink-100);
+  border: 1px solid var(--line);
+}
+
+.cart__info {
+  min-width: 0;
+}
+
+.cart__line-cat {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.2rem;
+}
+
+.cart__line-name {
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+
+.cart__line-price {
+  margin-top: 0.3rem;
+  font-size: 0.82rem;
+  color: var(--text-mute);
+}
+
+.cart__controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.55rem;
+}
+
+.cart__stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.2rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+.cart__stepper button {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  color: var(--text-dim);
+  transition: color var(--dur-fast) linear, background var(--dur-fast) linear;
+}
+
+.cart__stepper button svg {
+  width: 12px;
+  height: 12px;
+}
+
+.cart__stepper button:hover {
+  color: var(--ink-000);
+  background: var(--accent);
+}
+
+.cart__stepper span {
+  min-width: 26px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.cart__remove {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  transition: color var(--dur-fast) linear;
+}
+
+.cart__remove:hover {
+  color: var(--text-dim);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---------- Vazio e confirmação ---------- */
+
+.cart__empty,
+.cart__done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  min-height: 100%;
+  padding: 3rem 0;
+  text-align: center;
+}
+
+.cart__empty-mark {
+  width: 54px;
+  height: 54px;
+  border-radius: 999px;
+  border: 1px dashed var(--line-strong);
+  margin-bottom: 0.4rem;
+}
+
+.cart__done-mark {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  color: var(--accent);
+  margin-bottom: 0.4rem;
+}
+
+.cart__done-mark svg {
+  width: 100%;
+  height: 100%;
+}
+
+.cart__empty-title,
+.cart__done-title {
+  font-size: 1.2rem;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  text-transform: uppercase;
+}
+
+.cart__empty-note,
+.cart__done-note {
+  max-width: 30ch;
+  font-size: 0.84rem;
+  line-height: 1.6;
+  color: var(--text-mute);
+  margin-bottom: 0.6rem;
+  text-wrap: pretty;
+}
+
+/* ---------- Rodapé ---------- */
+
+.cart__foot {
+  padding: 1.25rem var(--gutter) calc(1.5rem + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+  background: var(--ink-100);
+}
+
+.cart__summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.1rem;
+}
+
+.cart__summary > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.cart__summary dt {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.cart__summary dd {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.cart__summary-muted dd {
+  color: var(--text-mute);
+}
+
+.cart__summary-total {
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--line);
+}
+
+.cart__summary-total dt {
+  color: var(--text-dim);
+}
+
+.cart__summary-total dd {
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.cart__checkout {
+  width: 100%;
+}
+
+.cart__fineprint {
+  margin-top: 0.7rem;
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--text-faint);
+}
+
+@media (max-width: 420px) {
+  .cart__line {
+    grid-template-columns: 58px minmax(0, 1fr) auto;
+    gap: 0.75rem;
+  }
+
+  .cart__thumb {
+    width: 58px;
+    height: 74px;
+  }
+
+  .cart__line-name {
+    font-size: 0.95rem;
+  }
+}
+
+/* Número do pedido devolvido pela API. */
+.cart__done-code {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  color: var(--accent);
+  margin-top: -0.25rem;
+}

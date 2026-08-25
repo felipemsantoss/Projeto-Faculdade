@@ -1,0 +1,28 @@
+.art {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* As três camadas se deslocam em ritmos diferentes: o objeto responde mais que
+   o fundo, o que gera a leitura de profundidade sem custo de layout. */
+.art__bg,
+.art__glow,
+.art__object {
+  transform-box: view-box;
+  transform-origin: center;
+  transition: transform var(--dur-slow) var(--ease-out-expo);
+}
+
+.art__bg {
+  transform: translate3d(calc(var(--px, 0) * 4px), calc(var(--py, 0) * 4px), 0);
+}
+
+.art__glow {
+  transform: translate3d(calc(var(--px, 0) * 16px), calc(var(--py, 0) * 16px), 0);
+}
+
+.art__object {
+  transform: translate3d(calc(var(--px, 0) * 26px), calc(var(--py, 0) * 22px), 0)
+    scale(var(--art-scale, 1));
+}

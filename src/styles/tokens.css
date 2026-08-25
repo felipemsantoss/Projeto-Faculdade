@@ -1,0 +1,84 @@
+/* ============================================================
+   ATELIER NOIR — Design tokens
+   Um único lugar para cor, tipografia, ritmo e movimento.
+   ============================================================ */
+
+:root {
+  /* ---- Superfícies (dark, levemente frias) ---- */
+  --ink-000: #060608;
+  --ink-050: #09090c;
+  --ink-100: #0e0e13;
+  --ink-200: #14141b;
+  --ink-300: #1c1c25;
+  --ink-400: #262631;
+
+  /* ---- Traços e véus ---- */
+  --line: rgba(255, 255, 255, 0.07);
+  --line-strong: rgba(255, 255, 255, 0.14);
+  --veil: rgba(6, 6, 8, 0.72);
+
+  /* ---- Texto (off-white levemente quente para contraste editorial) ----
+     Os quatro níveis são opacidades sobre o fundo quase preto. Nenhum desce
+     abaixo de 4,5:1 contra --ink-000: o degradê é hierarquia, não decoração.
+     Para marcas puramente gráficas existe --text-ghost, que não carrega texto. */
+  --text: #f4f2ee;
+  --text-dim: rgba(244, 242, 238, 0.76);
+  --text-mute: rgba(244, 242, 238, 0.6);
+  --text-faint: rgba(244, 242, 238, 0.5);
+  --text-ghost: rgba(244, 242, 238, 0.22);
+
+  /* ---- Acento: sobrescrito por produto em runtime ---- */
+  --accent: #b9a6ff;
+  --accent-soft: rgba(185, 166, 255, 0.16);
+  --accent-line: rgba(185, 166, 255, 0.42);
+
+  /* ---- Tipografia ---- */
+  --font-sans: 'Inter Tight', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-serif: 'Instrument Serif', 'Times New Roman', Georgia, serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, monospace;
+
+  --display-1: clamp(2.75rem, 11vw, 9.5rem);
+  --display-2: clamp(2rem, 6.5vw, 5rem);
+  --display-3: clamp(1.5rem, 3.4vw, 2.5rem);
+  --body: clamp(0.9rem, 1.05vw, 1rem);
+  --micro: 0.6875rem;
+
+  /* Letra-espaçamento das micro-legendas (o "selo" editorial) */
+  --track-micro: 0.22em;
+
+  /* ---- Ritmo ---- */
+  --gutter: clamp(1.25rem, 4vw, 4rem);
+  --radius-s: 6px;
+  --radius-m: 14px;
+  --radius-l: 22px;
+  --radius-xl: 30px;
+
+  /* ---- Movimento ---- */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quint: cubic-bezier(0.83, 0, 0.17, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --dur-fast: 180ms;
+  --dur-mid: 420ms;
+  --dur-slow: 760ms;
+
+  /* ---- Elevação: luz, não sombra pesada ---- */
+  --lift-1: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 18px 40px -24px rgba(0, 0, 0, 0.9);
+  --lift-2: 0 1px 0 rgba(255, 255, 255, 0.07) inset, 0 40px 80px -40px rgba(0, 0, 0, 1);
+
+  --z-canvas: 0;
+  --z-content: 10;
+  --z-chrome: 60;
+  --z-overlay: 80;
+  --z-cursor: 100;
+
+  color-scheme: dark;
+}
+
+/* Respeita quem pediu menos movimento: encurta tudo, nunca remove o feedback. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 1ms;
+    --dur-mid: 1ms;
+    --dur-slow: 1ms;
+  }
+}

@@ -1,0 +1,373 @@
+.carousel {
+  --card-w: clamp(240px, 46vw, 366px);
+  --card-h: calc(var(--card-w) * 1.36);
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(0.75rem, 2.2vh, 2rem);
+  flex: 1;
+  min-height: 0;
+  padding-bottom: clamp(1rem, 3vh, 2.25rem);
+  /* Os cards laterais avançam para fora da tela de propósito: cortamos aqui
+     para que isso nunca vire rolagem horizontal na página. */
+  overflow-x: clip;
+  overflow-y: visible;
+}
+
+.carousel__viewport {
+  position: relative;
+  flex: 1;
+  min-height: 11rem;
+  width: 100%;
+  perspective: 1700px;
+  perspective-origin: 50% 50%;
+  /* Damos conta do eixo horizontal; o vertical continua rolando a página. */
+  touch-action: pan-y;
+}
+
+.carousel__track {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  transform-style: preserve-3d;
+}
+
+/* ---------- Card ---------- */
+
+/* O card nunca passa da altura disponível: em telas baixas ele encolhe
+   sozinho e a proporção mantém a largura coerente. */
+.pcard {
+  grid-area: 1 / 1;
+  height: min(var(--card-h), 100%);
+  width: auto;
+  aspect-ratio: 3 / 4.08;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+}
+
+/* Durante a coreografia de escolha o CSS assume o transform. */
+.carousel.is-choosing .pcard {
+  transition: transform 620ms var(--ease-in-out-quint), opacity 560ms var(--ease-out-expo),
+    filter 320ms var(--ease-out-expo);
+}
+
+.carousel.is-choosing .carousel__viewport {
+  pointer-events: none;
+}
+
+.pcard__hit {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border-radius: var(--radius-l);
+}
+
+.pcard__frame {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-l);
+  overflow: hidden;
+  background: var(--ink-100);
+  box-shadow: var(--lift-2);
+  transition: transform var(--dur-mid) var(--ease-out-expo), box-shadow var(--dur-mid) var(--ease-out-expo);
+}
+
+/* Fio de luz na borda, no lugar de um contorno duro. */
+.pcard__frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: border-color var(--dur-mid) var(--ease-out-expo);
+  pointer-events: none;
+}
+
+.pcard[data-focused='true'] .pcard__hit:hover .pcard__frame,
+.pcard[data-focused='true'] .pcard__hit:focus-visible .pcard__frame {
+  transform: scale(1.022);
+}
+
+.pcard[data-focused='true'] .pcard__hit:hover .pcard__frame::after {
+  border-color: var(--accent-line);
+}
+
+.pcard__art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.pcard__veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(4, 4, 6, 0.55) 0%,
+    rgba(4, 4, 6, 0) 32%,
+    rgba(4, 4, 6, 0.28) 58%,
+    rgba(4, 4, 6, 0.88) 100%
+  );
+}
+
+/* Reflexo diagonal que desliza com o ponteiro. */
+.pcard__sheen {
+  position: absolute;
+  inset: -30%;
+  background: linear-gradient(
+    108deg,
+    transparent 42%,
+    rgba(255, 255, 255, 0.07) 50%,
+    transparent 58%
+  );
+  opacity: 0;
+  transform: translate3d(calc(var(--px, 0) * 90px), 0, 0);
+  transition: opacity var(--dur-mid) var(--ease-out-expo), transform var(--dur-slow) var(--ease-out-expo);
+}
+
+.pcard[data-focused='true'] .pcard__hit:hover .pcard__sheen {
+  opacity: 1;
+}
+
+/* ---------- Conteúdo ---------- */
+
+.pcard__top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 1.25rem;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.pcard__index {
+  color: rgba(244, 242, 238, 0.72);
+}
+
+.pcard__state {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.28rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(6, 6, 8, 0.4);
+  color: var(--text-mute);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  font-size: 9px;
+}
+
+.pcard__state svg {
+  width: 11px;
+  height: 11px;
+}
+
+.pcard__state.is-unlocked {
+  color: var(--accent);
+  border-color: var(--accent-line);
+}
+
+.pcard__body {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1.25rem 1.35rem 1.45rem;
+  text-align: left;
+}
+
+.pcard__category {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.pcard__name {
+  font-size: clamp(1.9rem, 3.4vw, 2.6rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 0.94;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+/* Detalhe e preço só entram no card em foco: menos ruído nas laterais. */
+.pcard__tagline,
+.pcard__row {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity var(--dur-mid) var(--ease-out-expo), transform var(--dur-mid) var(--ease-out-expo);
+}
+
+.pcard__tagline {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.02rem;
+  line-height: 1.35;
+  color: rgba(244, 242, 238, 0.66);
+}
+
+.pcard__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.55rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  transition-delay: 60ms;
+}
+
+.pcard[data-focused='true'] .pcard__tagline,
+.pcard[data-focused='true'] .pcard__row {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.pcard__price {
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.pcard__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.pcard__cta svg {
+  width: 13px;
+  height: 13px;
+  transition: transform var(--dur-fast) var(--ease-out-expo);
+}
+
+.pcard__hit:hover .pcard__cta svg {
+  transform: translate(2px, -2px);
+}
+
+/* ---------- Console ---------- */
+
+.carousel__console {
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 3vw, 2rem);
+}
+
+.carousel__arrow {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--text-dim);
+  transition: color var(--dur-fast) var(--ease-out-expo), border-color var(--dur-fast) var(--ease-out-expo),
+    background var(--dur-fast) var(--ease-out-expo), transform var(--dur-fast) var(--ease-spring);
+}
+
+.carousel__arrow svg {
+  width: 17px;
+  height: 17px;
+}
+
+.carousel__arrow:hover:not(:disabled) {
+  color: var(--text);
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  transform: scale(1.06);
+}
+
+.carousel__arrow:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.carousel__readout {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--text-mute);
+}
+
+.carousel__count {
+  color: var(--text);
+}
+
+.carousel__rail {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.carousel__tick {
+  width: 16px;
+  height: 1px;
+  background: var(--text-ghost);
+  transition: background var(--dur-mid) var(--ease-out-expo), width var(--dur-mid) var(--ease-spring);
+}
+
+.carousel__tick.is-active {
+  width: 30px;
+  background: var(--accent);
+}
+
+.carousel__hint {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  /* É instrução de uso, não enfeite: precisa ser legível. */
+  color: var(--text-faint);
+}
+
+/* ---------- Telas estreitas ---------- */
+
+@media (max-width: 720px) {
+  .carousel {
+    --card-w: min(74vw, 330px);
+    --card-h: calc(var(--card-w) * 1.32);
+  }
+
+  .carousel__viewport {
+    perspective: 1100px;
+  }
+
+  .pcard__name {
+    font-size: 2rem;
+  }
+
+  /* Sem hover confiável: o card central já mostra tudo. */
+  .pcard[data-focused='true'] .pcard__frame::after {
+    border-color: var(--accent-line);
+  }
+}
+
