@@ -238,7 +238,7 @@ nas pontas. Em repouso o loop detecta que nada mudou e para de escrever.
 Suporta arraste, roda, setas, `Home`/`End` e foco-centraliza.
 
 **Jogo dos três copos** — três rodadas, cada uma mais difícil que a anterior:
-5, 7 e 9 trocas, a 620, 470 e 320 ms por troca. Errar encerra a tentativa,
+5, 7 e 9 trocas, a 520, 385 e 250 ms por troca. Errar encerra a tentativa,
 revela onde a bolinha estava e oferece recomeçar.
 
 A parte que importa: **a bolinha pertence a um copo, não a uma posição**. O

@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
+import { useExperience } from '../../state/ExperienceContext';
 import { useSession } from '../../state/SessionContext';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { useLockBodyScroll } from '../../hooks/useLockBodyScroll';
@@ -16,6 +17,7 @@ type Checkout = 'idle' | 'processing' | 'done';
 export function CartDrawer() {
   const { lines, count, subtotal, isOpen, close, setQuantity, removeFromCart, checkout: enviarPedido, busy } =
     useSession();
+  const { exit } = useExperience();
   const panelRef = useRef<HTMLDivElement>(null);
   const [checkout, setCheckout] = useState<Checkout>('idle');
   const [orderId, setOrderId] = useState<string | null>(null);
@@ -37,6 +39,16 @@ export function CartDrawer() {
       setOrderId(null);
     }
   }, [isOpen]);
+
+  /**
+   * Fecha a gaveta e devolve o usuário à vitrine. Depois de finalizar a
+   * compra não faz sentido voltar para a tela da peça que acabou de sair do
+   * carrinho — o caminho natural é o catálogo.
+   */
+  const voltarAoCatalogo = () => {
+    close();
+    exit();
+  };
 
   /** Fecha o pedido na API. O carrinho é esvaziado pelo servidor. */
   const handleCheckout = async () => {
@@ -110,7 +122,7 @@ export function CartDrawer() {
                   <p className="cart__done-note">
                     Enviamos os detalhes por e-mail. Suas peças desbloqueadas continuam liberadas no catálogo.
                   </p>
-                  <ActionButton variant="outline" onClick={close}>
+                  <ActionButton variant="outline" onClick={voltarAoCatalogo}>
                     Continuar explorando
                   </ActionButton>
                 </motion.div>
@@ -119,9 +131,9 @@ export function CartDrawer() {
                   <span className="cart__empty-mark" aria-hidden="true" />
                   <p className="cart__empty-title">Nada por aqui ainda</p>
                   <p className="cart__empty-note">
-                    Escolha uma peça no catálogo e vença o desafio de memória para liberá-la.
+                    Escolha uma peça no catálogo e siga a bolinha para liberá-la.
                   </p>
-                  <ActionButton variant="outline" onClick={close}>
+                  <ActionButton variant="outline" onClick={voltarAoCatalogo}>
                     Ver o catálogo
                   </ActionButton>
                 </div>

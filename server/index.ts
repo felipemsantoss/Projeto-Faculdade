@@ -245,7 +245,7 @@ app.post('/api/cart', (req, res) => {
     throw new ApiError(
       409,
       'PRODUCT_LOCKED',
-      `A peça "${product.name}" ainda está lacrada. Vença o desafio de memória para liberá-la.`,
+      `A peça "${product.name}" ainda está lacrada. Siga a bolinha entre os copos para liberá-la.`,
     );
   }
 

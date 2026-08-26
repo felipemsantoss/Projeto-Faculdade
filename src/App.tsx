@@ -94,8 +94,14 @@ function Experience() {
   );
 
   return (
-    <div className="app">
+    // A fase governa as camadas de fundo: a vitrine ganha profundidade, as
+    // telas de jogo e de compra ficam mais contidas para não competir.
+    <div className="app" data-phase={phase}>
       <div className="app__aura" aria-hidden="true" />
+      <div className="app__aurora" aria-hidden="true">
+        <span />
+        <span />
+      </div>
       <div className="app__rules" aria-hidden="true">
         <span />
         <span />
@@ -103,6 +109,7 @@ function Experience() {
         <span />
       </div>
       <div className="app__grain" aria-hidden="true" />
+      <div className="app__vinheta" aria-hidden="true" />
 
       <a className="u-skip" href="#conteudo">
         Pular para o conteúdo

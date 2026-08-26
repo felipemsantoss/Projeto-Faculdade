@@ -164,16 +164,81 @@ ol {
   isolation: isolate;
 }
 
-/* Halo que assume a cor do produto em foco. */
+/* Halo que assume a cor do produto em foco: uma luz de cima, um clarão de
+   baixo e uma faixa fria no meio, para o fundo não ficar chapado. */
 .app__aura {
   position: fixed;
   inset: 0;
   z-index: var(--z-canvas);
   pointer-events: none;
   background:
-    radial-gradient(60% 45% at 50% 8%, var(--accent-soft), transparent 70%),
-    radial-gradient(80% 60% at 50% 110%, rgba(255, 255, 255, 0.035), transparent 68%);
+    radial-gradient(52% 38% at 50% -4%, var(--accent-soft), transparent 72%),
+    radial-gradient(70% 44% at 50% 104%, var(--accent-soft), transparent 74%),
+    radial-gradient(90% 60% at 50% 50%, rgba(255, 255, 255, 0.028), transparent 70%),
+    linear-gradient(to bottom, #07070b 0%, var(--ink-000) 42%, #05050a 100%);
   transition: background var(--dur-slow) var(--ease-out-expo);
+}
+
+/* Dois véus enormes que respiram devagar. São gradientes, não filtros de
+   desfoque: um blur em tela cheia custa caro e aqui não faz falta. */
+.app__aurora {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-canvas);
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0.75;
+}
+
+.app__aurora span {
+  position: absolute;
+  width: 68vmax;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: radial-gradient(circle, var(--accent-soft), transparent 66%);
+  transition: background var(--dur-slow) var(--ease-out-expo);
+  will-change: transform;
+}
+
+.app__aurora span:first-child {
+  top: -32vmax;
+  left: -18vmax;
+  animation: aurora-a 32s ease-in-out infinite alternate;
+}
+
+.app__aurora span:last-child {
+  bottom: -36vmax;
+  right: -20vmax;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.035), transparent 64%);
+  animation: aurora-b 26s ease-in-out infinite alternate;
+}
+
+@keyframes aurora-a {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(14vmax, 8vmax, 0) scale(1.16); }
+}
+
+@keyframes aurora-b {
+  from { transform: translate3d(0, 0, 0) scale(1.1); }
+  to { transform: translate3d(-12vmax, -6vmax, 0) scale(0.92); }
+}
+
+/* Cantos escurecidos: puxa o olho para o centro sem que se perceba. */
+.app__vinheta {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-canvas);
+  pointer-events: none;
+  background: radial-gradient(118% 78% at 50% 42%, transparent 52%, rgba(3, 3, 6, 0.62) 100%);
+}
+
+/* Fora da vitrine o fundo recua: o jogo e a compra pedem menos concorrência. */
+.app:not([data-phase='catalog']) .app__aurora {
+  opacity: 0.4;
+}
+
+.app:not([data-phase='catalog']) .app__rules {
+  opacity: 0.45;
 }
 
 /* Grão fino: tira o "plástico" do dark UI. */
@@ -202,6 +267,7 @@ ol {
   inset: 0;
   z-index: var(--z-canvas);
   pointer-events: none;
+  transition: opacity var(--dur-slow) var(--ease-out-expo);
   padding: 0 var(--gutter);
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -216,7 +282,8 @@ ol {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .app__grain {
+  .app__grain,
+  .app__aurora span {
     animation: none;
   }
 }

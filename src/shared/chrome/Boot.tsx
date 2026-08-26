@@ -22,7 +22,7 @@ export function Boot({ status, message, onRetry }: BootProps) {
         <span className={`boot__mark${isError ? ' boot__mark--error' : ''}`} aria-hidden="true" />
 
         <p className="boot__brand">
-          Atelier<span>Fedas</span>
+          Atelier<span>NOIR</span>
         </p>
 
         {isError ? (

@@ -378,6 +378,10 @@ export function Carousel({ products, onSelect }: CarouselProps) {
         onWheel={onWheel}
         onKeyDown={onKeyDown}
       >
+        {/* Chão: horizonte + clarão sob os cards, para eles se apoiarem em
+            algo em vez de flutuarem no vazio. Fica atrás de tudo. */}
+        <span className="carousel__chao" aria-hidden="true" />
+
         <div className="carousel__track" ref={trackRef}>
           {products.map((product, index) => {
             const unlocked = isUnlocked(product.id);

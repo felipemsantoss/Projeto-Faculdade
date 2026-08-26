@@ -21,7 +21,7 @@ export function Hero() {
       </h1>
 
       <p className="hero__note">
-        Escolha um produto e vença o desafio de memória para liberar a compra.
+        Escolha um produto, siga a bolinha entre os copos e libere a compra.
       </p>
     </header>
   );

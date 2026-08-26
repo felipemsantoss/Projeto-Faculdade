@@ -371,3 +371,42 @@
   }
 }
 
+
+/* ---------- Chão da vitrine ---------- */
+
+/*
+ * Uma linha de horizonte e um clarão logo abaixo dos cards. Sem isso os
+ * cards ficam boiando no preto; com isso a cena ganha um plano de apoio e
+ * a profundidade do carrossel passa a ser lida de verdade.
+ */
+.carousel__chao {
+  position: absolute;
+  left: -12%;
+  right: -12%;
+  /* O horizonte é preso à base do card central, não à altura do palco: os
+     cards ficam centrados, então a base deles é metade da pista mais metade
+     da altura do card. Sem isso a linha corta os cards no meio. */
+  top: calc(50% + min(var(--card-h), 100%) / 2 - 20px);
+  bottom: -4.5rem;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(58% 100% at 50% 0%, var(--accent-soft), transparent 72%),
+    radial-gradient(90% 100% at 50% 0%, rgba(255, 255, 255, 0.03), transparent 76%);
+  mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.35) 55%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.35) 55%, transparent 100%);
+  transition: background var(--dur-slow) var(--ease-out-expo);
+}
+
+/* A linha do horizonte, na cor da peça em foco. */
+.carousel__chao::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 22%;
+  right: 22%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--accent-line), transparent);
+  opacity: 0.6;
+  transition: background var(--dur-slow) var(--ease-out-expo);
+}

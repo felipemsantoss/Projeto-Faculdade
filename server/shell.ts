@@ -30,7 +30,9 @@ export interface PlanoDaRodada {
  */
 export function dificuldade(round: number) {
   const trocas = 3 + round * 2; // 5, 7, 9…
-  const swapMs = Math.max(220, 620 - (round - 1) * 150); // 620, 470, 320…
+  // O piso de 190 ms existe para o embaralhamento não virar um borrão: abaixo
+  // disso a troca deixa de ser acompanhável e o jogo passa a ser sorte.
+  const swapMs = Math.max(190, 520 - (round - 1) * 135); // 520, 385, 250…
   return { trocas, swapMs };
 }
 
