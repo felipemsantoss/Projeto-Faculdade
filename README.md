@@ -37,34 +37,43 @@ com o comando para corrigir e um botão de tentar de novo.
 | `npm run build`     | checagem de tipos dos dois lados + build |
 | `npm run typecheck` | só a checagem de tipos                  |
 
-## Versão publicada (GitHub Pages)
+## Publicando na Vercel
 
-O Pages serve apenas arquivos estáticos — não roda o Express. Para que o link
-público funcione mesmo assim, o build publicado sobe com **modo demonstração**:
-a mesma interface de chamadas passa a ser atendida pelo próprio navegador, em
-`src/services/demoApi.ts`.
+A Vercel roda o Express como função serverless, então a versão publicada é a
+**aplicação inteira** — front e API de verdade, com as chamadas aparecendo na
+aba Network como em desenvolvimento.
 
-As regras do jogo não são duplicadas: os dois lados importam
-`src/lib/shellRules.ts`, o mesmo módulo. O que a demonstração reimplementa é só
-a contabilidade de sessão e carrinho.
+Como está montado:
 
-|                          | Local (`npm run dev`)  | Publicado no Pages     |
-| ------------------------ | ---------------------- | ---------------------- |
-| Origem das respostas     | API Express            | o próprio navegador    |
-| Quem confere a escolha   | o servidor             | o navegador            |
-| Estado                   | `server/data/db.json`  | `localStorage`         |
-| Chamadas na aba Network  | sim                    | nenhuma                |
+- `vercel.json` manda tudo que chega em `/api/*` para a função
+- `api/index.ts` apenas reexporta o mesmo app de `server/index.ts` — não há
+  uma segunda versão da API
+- o `listen` fica condicionado a não estar na Vercel; lá quem escuta é a
+  plataforma
 
-A troca é feita pela variável `VITE_DEMO`, que só o workflow de publicação
-liga. Em desenvolvimento nada muda — inclusive a tela de erro quando a API está
-fora, para um problema no back não passar despercebido. Um selo
-**Demonstração** aparece na barra superior da versão publicada.
+Para publicar: em [vercel.com](https://vercel.com) → **Add New… → Project** →
+importe este repositório → **Deploy**. A configuração toda já está no
+`vercel.json`; não é preciso ajustar nada no painel.
 
-Para publicar com a API real no lugar da demonstração, hospede o Express em
-algum serviço e construa com `VITE_API_URL` apontando para ele.
+### A ressalva do estado
 
-O deploy roda sozinho a cada push na `main`, pelo workflow em
-`.github/workflows/pages.yml`.
+Em servidor próprio o estado vai para `server/data/db.json`. Na Vercel o disco
+é somente leitura e cada função é efêmera, então o estado vive na memória da
+instância: **o carrinho pode zerar se a função esfriar** entre uma visita e
+outra. Para uma demonstração isso passa; para uso real, trocar por um banco
+significa reescrever só `server/db.ts`.
+
+### Modo demonstração (hospedagem estática)
+
+Existe também um caminho sem servidor nenhum, para hospedagens que só servem
+arquivos — GitHub Pages, por exemplo. Construindo com `VITE_DEMO=1`, a mesma
+interface de chamadas passa a ser atendida pelo próprio navegador, em
+`src/services/demoApi.ts`, e um selo **Demonstração** aparece na barra
+superior. As regras do jogo não são duplicadas: os dois lados importam
+`src/lib/shellRules.ts`. O que muda é quem confere a escolha — ali é o
+navegador, não o servidor.
+
+Na Vercel isso fica desligado, porque a API roda de verdade.
 
 ## A API REST
 

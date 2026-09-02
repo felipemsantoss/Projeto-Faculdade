@@ -313,7 +313,16 @@ app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {
   res.status(500).json({ code: 'INTERNAL_ERROR', message: 'Falha inesperada no servidor.' });
 });
 
-app.listen(PORT, () => {
-  console.log(`\n  ATELIER NOIR — API REST em http://localhost:${PORT}/api`);
-  console.log(`  Saúde: http://localhost:${PORT}/api/health\n`);
-});
+/**
+ * Em servidor próprio (`npm run dev`) abrimos a porta. Na Vercel este mesmo
+ * app é importado por `api/index.ts` como função serverless, e quem escuta é
+ * a plataforma — por isso o listen fica condicionado.
+ */
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`\n  ATELIER NOIR — API REST em http://localhost:${PORT}/api`);
+    console.log(`  Saúde: http://localhost:${PORT}/api/health\n`);
+  });
+}
+
+export default app;

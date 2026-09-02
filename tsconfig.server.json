@@ -12,5 +12,5 @@
     "resolveJsonModule": true,
     "useDefineForClassFields": true
   },
-  "include": ["server", "src/data/products.ts", "src/types.ts", "src/lib/shellRules.ts"]
+  "include": ["server", "api", "src/data/products.ts", "src/types.ts", "src/lib/shellRules.ts"]
 }

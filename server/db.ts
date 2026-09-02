@@ -52,11 +52,20 @@ interface Database {
 const empty: Database = { sessions: {} };
 
 /**
+ * Em servidor próprio gravamos em arquivo. Na Vercel o disco é somente
+ * leitura e cada função é efêmera, então o estado vive só na memória da
+ * instância — o suficiente para uma visita, e some quando a função esfria.
+ * Trocar isto por um banco de verdade significa reescrever só este arquivo.
+ */
+const EM_ARQUIVO = !process.env.VERCEL;
+
+/**
  * Persistência em arquivo. Não é um banco de verdade, mas é estado de servidor
  * de verdade: sobrevive a reinícios e é a única fonte da verdade do carrinho.
  * Trocar isto por Postgres significa reescrever só este arquivo.
  */
 function read(): Database {
+  if (!EM_ARQUIVO) return structuredClone(empty);
   try {
     if (!existsSync(DB_FILE)) return structuredClone(empty);
     const parsed = JSON.parse(readFileSync(DB_FILE, 'utf8')) as Database;
@@ -69,6 +78,7 @@ function read(): Database {
 let db: Database = read();
 
 function persist(): void {
+  if (!EM_ARQUIVO) return;
   try {
     if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true });
     writeFileSync(DB_FILE, JSON.stringify(db, null, 2), 'utf8');
