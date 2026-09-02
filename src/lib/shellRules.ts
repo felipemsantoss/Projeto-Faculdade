@@ -1,5 +1,6 @@
 /**
- * Regras do jogo dos três copos.
+ * Regras do jogo dos três copos — compartilhadas pelo servidor e pelo modo
+ * demonstração do navegador, para que existam em um lugar só.
  *
  * O plano de cada rodada nasce aqui: onde a bolinha entra, quais trocas
  * acontecem e em que ritmo. O cliente recebe esse plano para conseguir

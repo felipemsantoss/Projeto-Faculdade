@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useExperience } from '../../state/ExperienceContext';
 import { useSession } from '../../state/SessionContext';
+import { MODO_DEMONSTRACAO } from '../../services/api';
 import { cx } from '../../lib/format';
 import './chrome.css';
 
@@ -41,6 +42,13 @@ export function TopBar() {
       </a>
 
       <div className="topbar__actions">
+        {/* Sinaliza, sem esconder, que a versão publicada roda sem servidor. */}
+        {MODO_DEMONSTRACAO && (
+          <span className="demo-tag" title="Publicado no GitHub Pages, que serve só arquivos estáticos: o próprio navegador responde no lugar da API.">
+            Demonstração
+          </span>
+        )}
+
         {phase !== 'catalog' && (
           <button type="button" className="ghost-btn" onClick={exit}>
             <svg viewBox="0 0 16 16" aria-hidden="true" className="ghost-btn__icon">

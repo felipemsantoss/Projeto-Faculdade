@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from 'react';
 import { useToast } from '../shared/ui';
-import { AtelierApi, apiCode, apiMessage } from '../services/api';
+import { Api, apiCode, apiMessage } from '../services/api';
 import { log, logAlerta } from '../lib/debug';
 import type { ChallengeState, OrderSummary, PickResult, Product, SessionState } from '../types';
 
@@ -86,7 +86,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
     // Cada carregamento devolve todas as peças ao estado lacrado: recarregar
     // a página significa vencer o desafio de novo. O carrinho sobrevive.
-    Promise.all([AtelierApi.products(), AtelierApi.relock()])
+    Promise.all([Api.products(), Api.relock()])
       .then(([catalogo, sessao]) => {
         if (cancelled) return;
         setProducts(catalogo);
@@ -135,13 +135,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const openChallenge = useCallback(
     (productId: string) =>
-      mutate('abrir desafio', () => AtelierApi.challenge(productId), () => undefined),
+      mutate('abrir desafio', () => Api.challenge(productId), () => undefined),
     [mutate],
   );
 
   const resetChallenge = useCallback(
     (productId: string) =>
-      mutate('sortear outra palavra', () => AtelierApi.resetChallenge(productId), () => undefined),
+      mutate('novo embaralhamento', () => Api.resetChallenge(productId), () => undefined),
     [mutate],
   );
 
@@ -153,7 +153,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     async (productId: string, index: number) => {
       const result = await mutate(
         'escolha',
-        () => AtelierApi.pick(productId, index),
+        () => Api.pick(productId, index),
         ({ session: next }) => setSession(next),
       );
       if (!result) return null;
@@ -165,7 +165,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const addToCart = useCallback(
     async (productId: string) => {
-      const result = await mutate('adicionar ao carrinho', () => AtelierApi.addToCart(productId), (next) => {
+      const result = await mutate('adicionar ao carrinho', () => Api.addToCart(productId), (next) => {
         setSession(next);
         setPulse((value) => value + 1);
       });
@@ -176,20 +176,20 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const setQuantity = useCallback(
     async (productId: string, quantity: number) => {
-      await mutate('alterar quantidade', () => AtelierApi.setQuantity(productId, quantity), setSession);
+      await mutate('alterar quantidade', () => Api.setQuantity(productId, quantity), setSession);
     },
     [mutate],
   );
 
   const removeFromCart = useCallback(
     async (productId: string) => {
-      await mutate('remover item', () => AtelierApi.removeFromCart(productId), setSession);
+      await mutate('remover item', () => Api.removeFromCart(productId), setSession);
     },
     [mutate],
   );
 
   const checkout = useCallback(async () => {
-    const result = await mutate('checkout', () => AtelierApi.checkout(), ({ session: next }) => setSession(next));
+    const result = await mutate('checkout', () => Api.checkout(), ({ session: next }) => setSession(next));
     return result?.order ?? null;
   }, [mutate]);
 

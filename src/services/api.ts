@@ -1,5 +1,6 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { log, logAlerta } from '../lib/debug';
+import { DemoApi } from './demoApi';
 import type { ChallengeState, OrderSummary, PickResult, Product, SessionState } from '../types';
 
 const SESSION_KEY = 'atelier-noir:session';
@@ -59,9 +60,13 @@ api.interceptors.response.use(
 const API_FORA_DO_AR =
   'Não foi possível falar com a API. Ela está rodando? Use "npm run dev" para subir front e back juntos.';
 
+/** Erros do modo demonstração carregam code/message, como os da API real. */
+const erroLocal = (error: unknown): { code?: string; message?: string } | null =>
+  error instanceof Error && 'code' in error ? (error as { code?: string; message?: string }) : null;
+
 /** Traduz qualquer falha em uma frase que dá para mostrar na tela. */
 export function apiMessage(error: unknown): string {
-  if (!axios.isAxiosError(error)) return 'Falha inesperada.';
+  if (!axios.isAxiosError(error)) return erroLocal(error)?.message ?? 'Falha inesperada.';
 
   // Erro da nossa API: ela sempre responde { code, message }.
   const fromServer = (error.response?.data as { message?: string } | undefined)?.message;
@@ -82,7 +87,7 @@ export function apiCode(error: unknown): string | null {
   if (axios.isAxiosError(error)) {
     return (error.response?.data as { code?: string } | undefined)?.code ?? null;
   }
-  return null;
+  return erroLocal(error)?.code ?? null;
 }
 
 // ------------------------------------------------------------------ rotas
@@ -129,3 +134,17 @@ export const AtelierApi = {
   checkout: () =>
     api.post<{ order: OrderSummary; session: SessionState }>('/orders').then((r) => r.data),
 };
+
+/**
+ * Modo demonstração.
+ *
+ * O build publicado no GitHub Pages serve só arquivos estáticos, então não há
+ * Express para chamar. Nesse build a variável VITE_DEMO vem ligada e a mesma
+ * interface passa a ser atendida pelo navegador (veja services/demoApi.ts).
+ * Em desenvolvimento a variável não existe e a API real continua sendo usada —
+ * inclusive a tela de erro, para um problema no back não passar despercebido.
+ */
+export const MODO_DEMONSTRACAO = import.meta.env.VITE_DEMO === '1';
+
+/** É por aqui que o resto do app fala: a origem certa já vem escolhida. */
+export const Api = MODO_DEMONSTRACAO ? DemoApi : AtelierApi;

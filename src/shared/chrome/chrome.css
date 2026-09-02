@@ -171,3 +171,24 @@
     padding: 0.5rem;
   }
 }
+
+/* Selo do modo demonstração — discreto, mas presente. */
+.demo-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 0.7rem;
+  border-radius: 999px;
+  border: 1px dashed var(--line-strong);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  cursor: help;
+}
+
+@media (max-width: 620px) {
+  .demo-tag {
+    display: none;
+  }
+}

@@ -3,7 +3,7 @@ import express, { type NextFunction, type Request, type Response } from 'express
 import { randomUUID } from 'node:crypto';
 import { PRODUCTS, getProductById } from '../src/data/products';
 import { getSession, saveSession, type CartRow, type ChallengeRow, type Session } from './db';
-import { COPOS, TOTAL_RODADAS, planejarRodada } from './shell';
+import { COPOS, TOTAL_RODADAS, planejarRodada } from '../src/lib/shellRules';
 
 const PORT = Number(process.env.API_PORT ?? 3333);
 const MAX_QUANTITY = 9;

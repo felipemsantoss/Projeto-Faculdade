@@ -37,6 +37,35 @@ com o comando para corrigir e um botão de tentar de novo.
 | `npm run build`     | checagem de tipos dos dois lados + build |
 | `npm run typecheck` | só a checagem de tipos                  |
 
+## Versão publicada (GitHub Pages)
+
+O Pages serve apenas arquivos estáticos — não roda o Express. Para que o link
+público funcione mesmo assim, o build publicado sobe com **modo demonstração**:
+a mesma interface de chamadas passa a ser atendida pelo próprio navegador, em
+`src/services/demoApi.ts`.
+
+As regras do jogo não são duplicadas: os dois lados importam
+`src/lib/shellRules.ts`, o mesmo módulo. O que a demonstração reimplementa é só
+a contabilidade de sessão e carrinho.
+
+|                          | Local (`npm run dev`)  | Publicado no Pages     |
+| ------------------------ | ---------------------- | ---------------------- |
+| Origem das respostas     | API Express            | o próprio navegador    |
+| Quem confere a escolha   | o servidor             | o navegador            |
+| Estado                   | `server/data/db.json`  | `localStorage`         |
+| Chamadas na aba Network  | sim                    | nenhuma                |
+
+A troca é feita pela variável `VITE_DEMO`, que só o workflow de publicação
+liga. Em desenvolvimento nada muda — inclusive a tela de erro quando a API está
+fora, para um problema no back não passar despercebido. Um selo
+**Demonstração** aparece na barra superior da versão publicada.
+
+Para publicar com a API real no lugar da demonstração, hospede o Express em
+algum serviço e construa com `VITE_API_URL` apontando para ele.
+
+O deploy roda sozinho a cada push na `main`, pelo workflow em
+`.github/workflows/pages.yml`.
+
 ## A API REST
 
 Express + TypeScript, em `server/`. Estado persistido em `server/data/db.json`,
@@ -86,7 +115,6 @@ aparece, sabe em que pasta olhar.
 ```
 server/                         ── A API REST ──
 ├── index.ts                    rotas, validações e regras de negócio
-├── shell.ts                    ← as regras do jogo: sorteio, trocas, dificuldade
 └── db.ts                       persistência em arquivo
 
 src/
@@ -95,7 +123,8 @@ src/
 ├── types.ts                    Contratos compartilhados (front e API)
 │
 ├── services/
-│   └── api.ts                  ← cliente axios e todas as rotas
+│   ├── api.ts                  ← cliente axios e todas as rotas
+│   └── demoApi.ts              a mesma interface, sem servidor (Pages)
 │
 ├── features/                   ── AS QUATRO ETAPAS, NA ORDEM ──
 │   ├── catalog/                01 · explorar e escolher (vai direto ao jogo)
@@ -125,7 +154,7 @@ src/
 │   └── chrome/                 TopBar e Boot (tela de partida/erro)
 │
 ├── hooks/                      Genéricos: mídia, foco, rolagem
-├── lib/                        debug, cor, formatação, embaralhamento
+├── lib/                        shellRules (regras do jogo), debug, cor, formatação
 ├── data/                       products.ts — o catálogo
 └── styles/                     tokens.css é o sistema visual inteiro
 ```
