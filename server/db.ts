@@ -2,10 +2,6 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const here = dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = join(here, 'data');
-const DB_FILE = join(DATA_DIR, 'db.json');
-
 export interface CartRow {
   productId: string;
   quantity: number;
@@ -60,6 +56,22 @@ const empty: Database = { sessions: {} };
 const EM_ARQUIVO = !process.env.VERCEL;
 
 /**
+ * O caminho do arquivo só é calculado quando de fato vamos usar disco.
+ *
+ * `import.meta.url` depende do formato de módulo com que o bundler empacotou
+ * o arquivo: em ESM funciona, mas se a plataforma compilar para CommonJS —
+ * como a Vercel fazia aqui — `import.meta.url` vem `undefined` e
+ * `fileURLToPath` derruba a função na importação, antes de qualquer rota
+ * responder (por isso toda rota, até uma inexistente, voltava 500). Adiar o
+ * cálculo para dentro de `EM_ARQUIVO` evita que essa linha rode em serverless
+ * de jeito nenhum, então o formato do bundle deixa de importar.
+ */
+function caminhoDoArquivo(): string {
+  const here = dirname(fileURLToPath(import.meta.url));
+  return join(here, 'data', 'db.json');
+}
+
+/**
  * Persistência em arquivo. Não é um banco de verdade, mas é estado de servidor
  * de verdade: sobrevive a reinícios e é a única fonte da verdade do carrinho.
  * Trocar isto por Postgres significa reescrever só este arquivo.
@@ -67,8 +79,9 @@ const EM_ARQUIVO = !process.env.VERCEL;
 function read(): Database {
   if (!EM_ARQUIVO) return structuredClone(empty);
   try {
-    if (!existsSync(DB_FILE)) return structuredClone(empty);
-    const parsed = JSON.parse(readFileSync(DB_FILE, 'utf8')) as Database;
+    const arquivo = caminhoDoArquivo();
+    if (!existsSync(arquivo)) return structuredClone(empty);
+    const parsed = JSON.parse(readFileSync(arquivo, 'utf8')) as Database;
     return parsed && typeof parsed === 'object' && parsed.sessions ? parsed : structuredClone(empty);
   } catch {
     return structuredClone(empty);
@@ -80,8 +93,10 @@ let db: Database = read();
 function persist(): void {
   if (!EM_ARQUIVO) return;
   try {
-    if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true });
-    writeFileSync(DB_FILE, JSON.stringify(db, null, 2), 'utf8');
+    const arquivo = caminhoDoArquivo();
+    const pasta = dirname(arquivo);
+    if (!existsSync(pasta)) mkdirSync(pasta, { recursive: true });
+    writeFileSync(arquivo, JSON.stringify(db, null, 2), 'utf8');
   } catch (error) {
     console.error('[db] falha ao gravar:', error);
   }
